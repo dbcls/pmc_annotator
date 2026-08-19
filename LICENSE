@@ -1,0 +1,5 @@
+TODO: choose and add a license before making the repository public.
+
+Recommended: MIT for the code (matches Bioregistry and common bioinformatics tooling).
+Note separately the licensing of bundled data/pattern files and of external
+dependencies (TogoID, rdf-config, HunFlair2, etc.) in the README.

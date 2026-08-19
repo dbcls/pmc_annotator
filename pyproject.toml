@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pmc-annotator"
+version = "0.1.0"
+description = "PMC full-text database-identifier extraction, entry-level existence verification, and reference-role classification (created/used/mentioned) for data-reuse metrics"
+requires-python = ">=3.9"
+readme = "README.md"
+dependencies = [
+    "lxml",          # JATS XML parsing (preprocess)
+    "pyarrow",       # parquet I/O (build_windows, build_llm_payloads)
+    "duckdb",        # aggregation (build_metrics, build_candidates)
+    "pysbd",         # sentence segmentation (build_windows)
+    "requests",      # HTTP (verification, LLM backends)
+    "pyyaml",        # pattern / config files
+    "pandas",        # analysis / eval
+]
+
+[project.optional-dependencies]
+# Heavy NER stack — only needed to run the concept layer (HunFlair2) on a GPU box.
+hunflair = [
+    "flair>=0.14",
+    "scispacy",
+    # pyahocorasick / pyab3p may be OS-dependent; install separately if needed.
+]
+
+[project.scripts]
+pmc-annotate       = "pmc_annotator.pipeline:main"
+pmc-build-windows  = "pmc_annotator.build_windows:main"
+pmc-role-prepass   = "pmc_annotator.role_prepass:main"
+pmc-build-payloads = "pmc_annotator.build_llm_payloads:main"
+pmc-role-run       = "pmc_annotator.role_llm_run:main"
+pmc-make-gold      = "pmc_annotator.make_gold_sample:main"
+pmc-eval-roles     = "pmc_annotator.eval_roles:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pmc_annotator = ["data/*.yaml"]

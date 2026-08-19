@@ -1,0 +1,10 @@
+{
+  "phase1_dir": "data/oa/phase1_5",
+  "identifier_dict": "data/oa/phase3b/identifier_dict.parquet",
+  "n_total": 103416150,
+  "n_with_identifier": 101495280,
+  "identifier_source": {
+    "phase3b_contextfree_linker": 101495280,
+    "unlinked": 1920870
+  }
+}

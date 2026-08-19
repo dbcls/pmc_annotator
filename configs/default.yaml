@@ -1,0 +1,53 @@
+# PMC Annotator パイプライン設定
+
+preprocess:
+  input_dir: ./data/input              # PMC OA JATS XML ルート
+  intermediate_dir: ./data/intermediate
+  shard_size: 500                       # 1 shard あたりの文書数
+  workers: 16                           # CPU プロセス数
+  include_captions: true
+  include_tables_text: false            # 表の本文を取り込むか (オフセット計算が複雑になる)
+  include_refs: false
+
+annotate:
+  output_dir: ./data/output
+  device: cuda:0
+  batch_size: 64
+  mini_batch_size: 32
+  # HunFlair2 EntityLinker を有効にするエンティティタイプ
+  linkers:
+    - disease
+    - chemical
+    - species
+    - gene
+
+# Stage C 以降 (後段で実装)
+pubdict:
+  enabled: false
+  dictionaries:
+    - go_terms
+    - reactome_pathways
+    - uniprot_protein_names
+    - cellosaurus
+  # ローカルダンプの場所 (Aho-Corasick 用)
+  cache_dir: ./data/dict_cache
+
+regex:
+  enabled: false
+  patterns:
+    uniprot_ac: '[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}'
+    pdb_id: '\b[1-9][A-Z0-9]{3}\b'  # 文脈フィルタ必須
+    refseq: '[NX][MRPC]_\d+(\.\d+)?'
+    geo: 'GSE\d+|GSM\d+|GPL\d+'
+    sra: '[SED]RR\d+|[SED]RP\d+|[SED]RX\d+'
+    chembl: 'CHEMBL\d+'
+    rhea: 'RHEA:\d+'
+    doi: '10\.\d{4,9}/\S+'
+
+normalize:
+  enabled: false
+  # TogoID による相互変換ルール
+  togoid_routes:
+    - {from: ncbigene, to: uniprot}
+    - {from: mesh, to: doid}
+    - {from: chebi, to: pubchem_compound}

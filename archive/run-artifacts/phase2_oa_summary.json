@@ -1,0 +1,57 @@
+{
+  "phase1_dir": "data/phase1_oa",
+  "n_shards": 125,
+  "n_docs": 62500,
+  "n_annotations": 9002160,
+  "n_unique_surfaces": 697296,
+  "compression_ratio": 0.07745874323495694,
+  "per_entity_type": {
+    "gene": {
+      "n_anns": 3227487,
+      "n_with_id": 0,
+      "n_missing_id": 3227487
+    },
+    "chemical": {
+      "n_anns": 2207978,
+      "n_with_id": 0,
+      "n_missing_id": 2207978
+    },
+    "disease": {
+      "n_anns": 1766988,
+      "n_with_id": 0,
+      "n_missing_id": 1766988
+    },
+    "species": {
+      "n_anns": 1647208,
+      "n_with_id": 0,
+      "n_missing_id": 1647208
+    },
+    "cell_line": {
+      "n_anns": 152499,
+      "n_with_id": 0,
+      "n_missing_id": 152499
+    }
+  },
+  "unique_per_entity_type": {
+    "gene": {
+      "n_unique": 327861,
+      "avg_freq": 9.844071115503215,
+      "max_freq": 16689
+    },
+    "chemical": {
+      "n_unique": 152746,
+      "avg_freq": 14.455226323438911,
+      "max_freq": 20963
+    },
+    "disease": {
+      "n_unique": 152625,
+      "avg_freq": 11.577316953316954,
+      "max_freq": 49835
+    },
+    "species": {
+      "n_unique": 64064,
+      "avg_freq": 25.711913086913086,
+      "max_freq": 321320
+    }
+  }
+}

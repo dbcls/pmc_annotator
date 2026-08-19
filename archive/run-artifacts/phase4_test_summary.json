@@ -1,0 +1,11 @@
+{
+  "phase1_dir": "data/phase1_test",
+  "identifier_dict": "data/phase3b_test/identifier_dict.parquet",
+  "n_total": 286584,
+  "n_with_identifier": 236993,
+  "identifier_source": {
+    "phase3b_contextfree_linker": 189283,
+    "unlinked": 49591,
+    "phase1_short_linker": 47710
+  }
+}

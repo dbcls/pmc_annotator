@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "pmc-annotator: data-reference extraction, existence verification, and role classification from PMC full text"
+authors:
+  - family-names: Yamamoto
+    given-names: Yasunori
+    affiliation: "Database Center for Life Science (DBCLS)"
+version: 0.1.0
+license: TODO
+repository-code: "https://github.com/<org>/pmc-annotator"
+keywords:
+  - text mining
+  - data citation
+  - identifier resolution
+  - PMC
+references:
+  - type: article
+    title: "TogoID: an exploratory ID converter to bridge biological datasets"
+    authors:
+      - family-names: Ikeda
+        given-names: Shuya
+    doi: 10.1093/bioinformatics/btac491
+    year: 2022

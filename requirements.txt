@@ -1,0 +1,9 @@
+# Core runtime (identifier + verification + role-classification stages).
+# Concept layer (HunFlair2) is a separate GPU install: pip install -e ".[hunflair]"
+lxml
+pyarrow
+duckdb
+pysbd
+requests
+pyyaml
+pandas

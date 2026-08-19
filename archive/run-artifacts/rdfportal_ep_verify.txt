@@ -1,0 +1,85 @@
+[WARN] chip-atlas batch err: HTTP Error 405: 405
+  chip-atlas: ERR HTTP Error 405: 405
+[WARN] dbnsfp batch err: HTTP Error 404: Not Found
+  dbnsfp: ERR HTTP Error 404: Not Found
+[WARN] gwascatalog batch err: HTTP Error 406: Not Acceptable
+  gwascatalog: ERR HTTP Error 406: Not Acceptable
+[WARN] mesh batch err: Remote end closed connection without response
+  mesh: ERR Remote end closed connection without response
+[WARN] nextprot batch err: HTTP Error 405: 405
+  nextprot: ERR HTTP Error 405: 405
+[WARN] togoid batch err: HTTP Error 502: Bad Gateway
+  togoid: ERR HTTP Error 502: Bad Gateway
+[WARN] togovar batch err: HTTP Error 400: Bad Request
+  togovar: ERR HTTP Error 400: Bad Request
+NG  bacdive          https://rdfportal.org/primary/sparql
+OK  bgee             https://rdfportal.org/sib/sparql
+NG  biosample        https://rdfportal.org/ebi/sparql
+OK  brenda           https://rdfportal.org/primary/sparql
+OK  chebi            https://rdfportal.org/ebi/sparql
+NG  chembl           https://rdfportal.org/ebi/sparql
+NG  chip-atlas       https://integbio.jp/togosite/sparql
+OK  civic            http://sparql.med2rdf.org/sparql
+OK  clinvar          https://rdfportal.org/ncbi/sparql
+OK  dbcatalog        https://rdfportal.org/primary/sparql
+NG  dbnsfp           https://rdfportal.org/med2rdf/sparql
+OK  ddbj             https://rdfportal.org/ddbj/sparql
+OK  dgidb            http://sparql.med2rdf.org/sparql
+OK  ensembl          https://rdfportal.org/ebi/sparql
+NG  expressionatlas  https://rdfportal.org/ebi/sparql
+OK  famsbase         https://rdfportal.org/primary/sparql
+OK  ggdonto          https://rdfportal.org/primary/sparql
+OK  glycoepitope     https://rdfportal.org/primary/sparql
+OK  glycosmos        https://ts.glycosmos.org/sparql
+OK  glytoucan        https://rdfportal.org/primary/sparql
+OK  go               https://rdfportal.org/primary/sparql
+NG  gtdb             https://rdfportal.org/primary/sparql
+NG  gwascatalog      https://togovar.org/sparql
+OK  hco              http://sparql.med2rdf.org/sparql
+OK  hgnc             https://rdfportal.org/primary/sparql
+OK  hint             http://sparql.med2rdf.org/sparql
+OK  homologene       https://rdfportal.org/primary/sparql
+OK  hpo              https://rdfportal.org/primary/sparql
+OK  instruct         http://sparql.med2rdf.org/sparql
+OK  interview-form   http://sparql.med2rdf.org/sparql
+NG  jcm              https://rdfportal.org/primary/sparql
+NG  jpostdb          https://rdfportal.org/primary/sparql
+OK  kero             https://rdfportal.org/kero/sparql
+NG  knapsack         https://rdfportal.org/primary/sparql
+OK  linked_icgc      https://rdfportal.org/primary/sparql
+NG  mbgd             https://rdfportal.org/primary/sparql
+OK  medgen           https://rdfportal.org/ncbi/sparql
+NG  mediadive        https://rdfportal.org/primary/sparql
+NG  mesh             https://id.nlm.nih.gov/mesh/sparql
+OK  mondo            https://rdfportal.org/primary/sparql
+OK  mp               https://rdfportal.org/bioportal/sparql
+OK  nadd             https://rdfportal.org/primary/sparql
+OK  nando            https://rdfportal.org/primary/sparql
+OK  naro_genebank    https://rdfportal.org/primary/sparql
+NG  nbrc             https://rdfportal.org/primary/sparql
+OK  ncbigene         https://rdfportal.org/ncbi/sparql
+OK  ncit             https://rdfportal.org/bioportal/sparql
+NG  nextprot         https://integbio.jp/togosite/sparql
+OK  nikkaji          https://rdfportal.org/primary/sparql
+OK  nlm-catalog      https://rdfportal.org/ncbi/sparql
+OK  oma              https://sparql.omabrowser.org/sparql/
+OK  opentggates      https://rdfportal.org/primary/sparql
+OK  paconto          https://rdfportal.org/primary/sparql
+NG  pdb              https://rdfportal.org/pdb/sparql
+NG  pgdbj            https://rdfportal.org/primary/sparql
+OK  polyinfo         https://rdfportal.org/primary/sparql
+OK  pubcasefinder    https://rdfportal.org/primary/sparql
+OK  pubchem          https://rdfportal.org/pubchem/sparql
+OK  pubmed           https://rdfportal.org/ncbi/sparql
+OK  quanto           https://rdfportal.org/primary/sparql
+NG  reactome         https://rdfportal.org/ebi/sparql
+OK  rhea             https://rdfportal.org/sib/sparql
+NG  sra_experiment   https://rdfportal.org/ddbj/sparql
+OK  ssbd             https://rdfportal.org/primary/sparql
+NG  togoid           https://rdfportal.org/togoid/sparql
+NG  togovar          https://grch38.togovar.org/sparql
+OK  uberon           https://rdfportal.org/bioportal/sparql
+OK  uniprot          https://rdfportal.org/sib/sparql
+NG  wurcs            https://sparql.glyconavi.org/sparql
+
+smoke: OK=46 NG=23 skip=23

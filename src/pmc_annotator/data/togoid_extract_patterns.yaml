@@ -1,0 +1,478 @@
+context_required: {}
+excluded:
+  atc:
+    category: Drug
+    orig_regex: ^(?<id>[A-Z]\d{2}[A-Z]{2}\d{2})$
+  biosample:
+    category: Sample
+    orig_regex: ^(?<id>SAM[NED]\w?\d+)$
+    uri: http://identifiers.org/biosample/
+  dbsnp:
+    category: Variant
+    orig_regex: ^(?<id>rs\d+)$
+    uri: http://identifiers.org/dbsnp/
+  hgnc_symbol:
+    category: Gene
+    orig_regex: ^(?<id>[A-Z0-9_(?:orf)\-]+\@?)$
+  homologene:
+    category: Ortholog
+    orig_regex: ^(?<id>\d+)$
+  iuphar_ligand:
+    category: Compound
+    orig_regex: ^(?<id>\d+)$
+  mbgd_gene:
+    category: Gene
+    orig_regex: ^(?<id>[a-z0-9]+:[A-Z0-9_\.-]+)$
+  mbgd_organism:
+    category: Organism
+    orig_regex: ^(?<id>[a-z0-9]+)$
+  medgen:
+    category: Phenotype
+    orig_regex: ^(?<id>CN?\d{4,7})$
+  mesh:
+    category: Phenotype
+    orig_regex: ^(?<id>[CD]\d{6,9})$
+  ncbigene:
+    category: Gene
+    orig_regex: ^(?<id>\d+)$
+  oma_group:
+    category: Ortholog
+    orig_regex: ^(?<id>[A-Z]+)$
+  oma_protein:
+    category: Protein
+    orig_regex: ^(?<id>[A-Z]{3}[A-Z0-9]{2}[0-9]{5,6})$
+  pathbank:
+    category: Pathway
+    orig_regex: ^(?<id>SMP\d+)$
+  pdb:
+    category: Structure
+    orig_regex: ^(?<id>[0-9][A-Za-z0-9]{3})$
+    uri: http://identifiers.org/pdb/
+  pdb_ccd:
+    category: Compound
+    orig_regex: ^(?<id>(?:\w{5}|\w{1,3}))$
+  pubchem_compound:
+    category: Compound
+    orig_regex: ^(?:CID)?(?<id>\d+)$
+  pubchem_substance:
+    category: Compound
+    orig_regex: ^(?:SID)?(?<id>\d+)$
+  rfam:
+    category: Transcript
+    orig_regex: ^(?<id>RF\d{5})?$
+  rhea:
+    category: Reaction
+    orig_regex: ^(?<id>\d{5})$
+  sgd:
+    category: Gene
+    orig_regex: ^(?<id>S\d{9})$
+    uri: http://identifiers.org/sgd/
+  sra_accession:
+    category: Submission
+    orig_regex: ^(?<id>[SED]RA\d+)$
+    uri: http://identifiers.org/insdc.sra/
+  sra_project:
+    category: Project
+    orig_regex: ^(?<id>[SED]RP\d+)$
+    uri: http://identifiers.org/insdc.sra/
+  sra_run:
+    category: SequenceRun
+    orig_regex: ^(?<id>[SED]RR\d+)$
+    uri: http://identifiers.org/insdc.sra/
+  sra_sample:
+    category: Sample
+    orig_regex: ^(?<id>[SED]RS\d+)$
+    uri: http://identifiers.org/insdc.sra/
+  taxonomy:
+    category: Organism
+    orig_regex: ^(?<id>\d+)$
+    uri: http://identifiers.org/taxonomy/
+  uniprot:
+    category: Protein
+    orig_regex: ^(?:(?<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+)?)|(?<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)?)(?:\.\d+)?)$
+  uniprot_mnemonic:
+    category: Protein
+    orig_regex: ^(?<id>[A-Z0-9]+_[A-Z0-9]{0,5})$
+  uniprot_proteome:
+    category: Proteome
+    orig_regex: ^(?<id>UP\d{0,9})$
+  wikipathways:
+    category: Pathway
+    orig_regex: ^(?<id>WP\d{1,5})(?:\_r\d+)?$
+safe:
+  affy_probeset:
+    category: Probe
+    orig_regex: ^(?<id>\d{3,}(?:_[a-z])?_at)$
+    pattern: \b(?P<id>\d{3,}(?:_[a-z])?_at)\b
+  assembly_insdc:
+    category: Genome
+    orig_regex: ^(?<id>GCA_\d{9})(?:\.\d+)?$
+    pattern: \b(?P<id>GCA_\d{9})(?:\.\d+)?\b
+    uri: http://identifiers.org/insdc.gca/
+  assembly_refseq:
+    category: Genome
+    orig_regex: ^(?<id>GCF_\d{9})(?:\.\d+)?$
+    pattern: \b(?P<id>GCF_\d{9})(?:\.\d+)?\b
+    uri: http://identifiers.org/insdc.gca/
+  bioproject:
+    category: Project
+    orig_regex: ^(?<id>PRJ[DEN][A-Z]\d+)$
+    pattern: \b(?P<id>PRJ[DEN][A-Z]\d+)\b
+    uri: http://identifiers.org/bioproject/
+  bioproject_umbrella:
+    category: Project
+    orig_regex: ^(?<id>PRJ[DEN][A-Z]\d+)$
+    pattern: \b(?P<id>PRJ[DEN][A-Z]\d+)\b
+    uri: http://identifiers.org/bioproject/
+  ccds:
+    category: Gene
+    orig_regex: ^(?<id>CCDS\d+)(?:\.\d+)?$
+    pattern: \b(?P<id>CCDS\d+)(?:\.\d+)?\b
+  cellosaurus:
+    category: CellLine
+    orig_regex: ^CVCL[:_](?<id>[A-Z0-9]{4})$
+    pattern: \bCVCL[:_](?P<id>[A-Z0-9]{4})\b
+  chebi:
+    category: Compound
+    orig_regex: ^(?:CHEBI[:_])?(?<id>\d+)$
+    pattern: \b(?:CHEBI[:_])(?P<id>\d+)\b
+  chembl_compound:
+    category: Compound
+    orig_regex: ^(?<id>CHEMBL\d+)$
+    pattern: \b(?P<id>CHEMBL\d+)\b
+  chembl_target:
+    category: Protein
+    orig_regex: ^(?<id>CHEMBL\d+)$
+    pattern: \b(?P<id>CHEMBL\d+)\b
+  cl:
+    category: Anatomy
+    orig_regex: ^CL[:_](?<id>\d{7})$
+    pattern: \bCL[:_](?P<id>\d{7})\b
+  clinvar:
+    category: Variant
+    orig_regex: ^(?:VCV0*)?(?<id>\d{1,9})$
+    pattern: \b(?:VCV0*)(?P<id>\d{1,9})\b
+  clo:
+    category: CellLine
+    orig_regex: ^CLO[:_](?<id>\d{7})$
+    pattern: \bCLO[:_](?P<id>\d{7})\b
+  cog:
+    category: Ortholog
+    orig_regex: ^(?<id>COG\d{4})$
+    pattern: \b(?P<id>COG\d{4})\b
+  doid:
+    category: Phenotype
+    orig_regex: ^DO(?:ID)?[:_](?<id>\d+)$
+    pattern: \bDO(?:ID)?[:_](?P<id>\d+)\b
+  drugbank:
+    category: Drug
+    orig_regex: ^(?<id>DB\d{5})$
+    pattern: \b(?P<id>DB\d{5})\b
+  ec:
+    category: Function
+    orig_regex: ^(?:EC:)?(?<id>\d+\.(?:(?:-\.-\.-)|\d+\.(?:(?:-\.-)|\d+\.(?:-|n?\d+))))$
+    pattern: \b(?:EC:)(?P<id>\d+\.(?:(?:-\.-\.-)|\d+\.(?:(?:-\.-)|\d+\.(?:-|n?\d+))))\b
+    uri: http://identifiers.org/ec-code/
+  efo_disease:
+    category: Phenotype
+    orig_regex: ^EFO[:_](?<id>\d{7})$
+    pattern: \bEFO[:_](?P<id>\d{7})\b
+  ensembl_gene:
+    category: Gene
+    note: 6/10 alternatives kept; removed 1 FlyBase alt(s) → flybase_*
+    orig_regex: ^(?:(?:(?<id1>ENS[A-Z]*G\d{11})(?:\.\d+)?)|(?<id2>FBgn\d{7})|(?:(?<id3>MGP_[A-Za-z0-9]+_G\d{7})(?:\.\d+)?)|(?<id4>LRG_\d+)|(?<id5>WBGene\d{8})|(?<id6>Y[A-Z]{2}\d{3}[A-Z](?:-[A-Z])?)|(?<id7>Q\d{4})|(?<id8>[A-Z]{3}\d{1,3}(?:-\d)?)|(?<id9>snR\d+-?[A-Za-z]?)|(?<id10>t[A-Z]\(?:[ACGUX]{3}\)[A-Z]\d?))$
+    pattern: \b(?:(?:(?P<id1>ENS[A-Z]*G\d{11})(?:\.\d+)?)|(?:(?P<id3>MGP_[A-Za-z0-9]+_G\d{7})(?:\.\d+)?)|(?P<id4>LRG_\d+)|(?P<id5>WBGene\d{8})|(?P<id10>t[A-Z]\(?:[ACGUX]{3}\)[A-Z]\d?))\b
+    uri: http://identifiers.org/ensembl/
+  ensembl_protein:
+    category: Protein
+    note: 4/7 alternatives kept; removed 1 FlyBase alt(s) → flybase_*
+    orig_regex: ^(?:(?:(?<id1>ENS[A-Z]*P\d{11})(?:\.\d+)?)|(?<id2>FBpp\d{7})|(?:(?<id3>MGP_[A-Za-z0-9]+_P\d{7})(?:\.\d+)?)|(?<id4>LRG_\d+p\d+(?:-\d)?)|(?<id5>(?:[A-Za-z0-9][A-Za-z0-9_]+)\.t?\d+[a-z]?(?:\.\d+)?)|(?<id6>Y[A-Z]{2}\d{3}[A-Z](?:-[A-Z])?)|(?<id7>Q\d{4}))$
+    pattern: \b(?:(?:(?P<id1>ENS[A-Z]*P\d{11})(?:\.\d+)?)|(?:(?P<id3>MGP_[A-Za-z0-9]+_P\d{7})(?:\.\d+)?)|(?P<id4>LRG_\d+p\d+(?:-\d)?))\b
+  ensembl_transcript:
+    category: Transcript
+    note: 7/10 alternatives kept; removed 1 FlyBase alt(s) → flybase_*
+    orig_regex: ^(?:(?:(?<id1>ENS[A-Z]*T\d{11})(?:\.\d+)?)|(?<id2>FBtr\d{7})|(?:(?<id3>MGP_[A-Za-z0-9]+_T\d{7})(?:\.\d+)?)|(?<id4>LRG_\d+t\d+(?:-\d)?)|(?<id5>(?:[A-Za-z0-9][A-Za-z0-9_]+)\.t?\d+[a-z]?(?:\.\d+)?)|(?<id6>Y[A-Z]{2}\d{3}[A-Z](?:-[A-Z])?(?:_[a-z]{1,3}RNA)?)|(?<id7>Q\d{4}_[a-z]{1,3}RNA)|(?<id8>[A-Z]{3}\d{1,3}(?:-\d)?_[a-z]{1,3}RNA)|(?<id9>snR\d+-?[A-Za-z]?_sno?RNA)|(?<id10>t[A-Z]\(?:[ACGUX]{3}\)[A-Z]\d?_tRNA))$
+    pattern: \b(?:(?:(?P<id1>ENS[A-Z]*T\d{11})(?:\.\d+)?)|(?:(?P<id3>MGP_[A-Za-z0-9]+_T\d{7})(?:\.\d+)?)|(?P<id4>LRG_\d+t\d+(?:-\d)?)|(?P<id7>Q\d{4}_[a-z]{1,3}RNA)|(?P<id9>snR\d+-?[A-Za-z]?_sno?RNA)|(?P<id10>t[A-Z]\(?:[ACGUX]{3}\)[A-Z]\d?_tRNA))\b
+  flybase_gene:
+    category: Gene
+    note: 'injected: FlyBase split from ensembl_* (independent db)'
+    orig_regex: FBgn\d{7}
+    pattern: \bFBgn\d{7}\b
+  flybase_protein:
+    category: Protein
+    note: 'injected: FlyBase split from ensembl_* (independent db)'
+    orig_regex: FBpp\d{7}
+    pattern: \bFBpp\d{7}\b
+  flybase_transcript:
+    category: Transcript
+    note: 'injected: FlyBase split from ensembl_* (independent db)'
+    orig_regex: FBtr\d{7}
+    pattern: \bFBtr\d{7}\b
+  gea:
+    category: Experiment
+    orig_regex: ^(?<id>E-GEAD-\d+)$
+    pattern: \b(?P<id>E-GEAD-\d+)\b
+  geo_sample:
+    category: Sample
+    orig_regex: ^(?<id>GSM\d+)$
+    pattern: \b(?P<id>GSM\d+)\b
+  geo_series:
+    category: Project
+    orig_regex: ^(?<id>GSE\d+)$
+    pattern: \b(?P<id>GSE\d+)\b
+  glycomotif:
+    category: Glycan
+    orig_regex: ^(?:GM\.)?(?<id>G[0-9]{5}[A-Z]{2})$
+    pattern: \b(?:GM\.)(?P<id>G[0-9]{5}[A-Z]{2})\b
+  glytoucan:
+    category: Glycan
+    orig_regex: ^(?<id>G[0-9]{5}[A-Z]{2})$
+    pattern: \b(?P<id>G[0-9]{5}[A-Z]{2})\b
+    uri: http://identifiers.org/glytoucan/
+  go:
+    category: Function
+    orig_regex: ^GO[:_](?<id>\d{7})$
+    pattern: \bGO[:_](?P<id>\d{7})\b
+  hgnc:
+    category: Gene
+    orig_regex: ^(?:(?:HGNC|hgnc):)?(?<id>\d{1,5})$
+    pattern: \b(?:(?:HGNC|hgnc):)(?P<id>\d{1,5})\b
+  hmdb:
+    category: Compound
+    orig_regex: ^(?:hmdb:)?(?<id>HMDB\d+)$
+    pattern: \b(?:hmdb:)(?P<id>HMDB\d+)\b
+  hp_inheritance:
+    category: Classification
+    orig_regex: ^HP[:_](?<id>\d{7})$
+    pattern: \bHP[:_](?P<id>\d{7})\b
+  hp_phenotype:
+    category: Phenotype
+    orig_regex: ^HP[:_](?<id>\d{7})$
+    pattern: \bHP[:_](?P<id>\d{7})\b
+  inchi_key:
+    category: Compound
+    orig_regex: ^(?<id>[A-Z]{14}\-[A-Z]{10}(?:\-[A-Z])?)$
+    pattern: \b(?P<id>[A-Z]{14}\-[A-Z]{10}(?:\-[A-Z])?)\b
+    uri: http://identifiers.org/inchikey/
+  insdc:
+    category: Gene
+    orig_regex: ^(?:insdc:)?(?<id>[A-Z]\d{5}|[A-Z]{2}\d{6}|[A-Z]{4}\d{8}|[A-J][A-Z]{2}\d{5}|[A-Z]{4,}\d{9})(?:\.\d+)?$
+    pattern: \b(?:insdc:)(?P<id>[A-Z]\d{5}|[A-Z]{2}\d{6}|[A-Z]{4}\d{8}|[A-J][A-Z]{2}\d{5}|[A-Z]{4,}\d{9})(?:\.\d+)?\b
+    uri: http://identifiers.org/insdc/
+  insdc_master:
+    category: Project
+    orig_regex: ^(?:insdc:)?(?<id>[A-Z]{4,6}\d{8,10})(?:\.\d+)?$
+    pattern: \b(?:insdc:)(?P<id>[A-Z]{4,6}\d{8,10})(?:\.\d+)?\b
+    uri: http://identifiers.org/insdc/
+  intact:
+    category: Interaction
+    orig_regex: ^(?<id>EBI\-[0-9]+)$
+    pattern: \b(?P<id>EBI\-[0-9]+)\b
+  interpro:
+    category: Domain
+    orig_regex: ^(?<id>IPR\d{6})$
+    pattern: \b(?P<id>IPR\d{6})\b
+  jga_dataset:
+    category: Project
+    orig_regex: ^(?<id>JGAD\d{6})$
+    pattern: \b(?P<id>JGAD\d{6})\b
+  jga_study:
+    category: Project
+    orig_regex: ^(?<id>JGAS\d{6})$
+    pattern: \b(?P<id>JGAS\d{6})\b
+  lipidmaps:
+    category: Lipid
+    orig_regex: ^(?<id>LM(?:FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}(?:[0-9a-zA-Z]{4,6})?)$
+    pattern: \b(?P<id>LM(?:FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}(?:[0-9a-zA-Z]{4,6})?)\b
+  lncbook_gene:
+    category: Gene
+    orig_regex: ^(?<id>HSALNG[0-9]{7})$
+    pattern: \b(?P<id>HSALNG[0-9]{7})\b
+  lrg:
+    category: Gene
+    orig_regex: ^(?<id>LRG_\d+)$
+    pattern: \b(?P<id>LRG_\d+)\b
+  meddra:
+    category: Phenotype
+    orig_regex: ^(?:(?:MedDRA|meddra):)?(?<id>\d+)$
+    pattern: \b(?:(?:MedDRA|meddra):)(?P<id>\d+)\b
+  mgi_allele:
+    category: Variant
+    orig_regex: ^(?:MGI|mgi):(?<id>\d{5,})$
+    pattern: \b(?:MGI|mgi):(?P<id>\d{5,})\b
+  mgi_gene:
+    category: Gene
+    orig_regex: ^(?:MGI|mgi):(?<id>\d{5,})$
+    pattern: \b(?:MGI|mgi):(?P<id>\d{5,})\b
+    uri: 'http://identifiers.org/mgi/MGI:'
+  mgi_genotype:
+    category: Genotype
+    orig_regex: ^(?:MGI|mgi):(?<id>\d{5,})$
+    pattern: \b(?:MGI|mgi):(?P<id>\d{5,})\b
+  mirbase:
+    category: Transcript
+    orig_regex: ^(?<id>MI\d{7})$
+    pattern: \b(?P<id>MI\d{7})\b
+  mirbase_mature:
+    category: Transcript
+    orig_regex: ^(?<id>MIMAT\d{7})$
+    pattern: \b(?P<id>MIMAT\d{7})\b
+  mondo:
+    category: Phenotype
+    orig_regex: ^MONDO[:_](?<id>\d{7})$
+    pattern: \bMONDO[:_](?P<id>\d{7})\b
+  mp:
+    category: Phenotype
+    orig_regex: ^MP[:_](?<id>\d{7})$
+    pattern: \bMP[:_](?P<id>\d{7})\b
+  nando:
+    category: Phenotype
+    orig_regex: ^NANDO[:_](?<id>\d{7})$
+    pattern: \bNANDO[:_](?P<id>\d{7})\b
+  nbdc_human_db:
+    category: Project
+    orig_regex: ^(?<id>hum\d{4})(?:[.\-]v\d+)?$
+    pattern: \b(?P<id>hum\d{4})(?:[.\-]v\d+)?\b
+  ncit_disease:
+    category: Phenotype
+    orig_regex: ^NCIT?[:_](?<id>C\d+)$
+    pattern: \bNCIT?[:_](?P<id>C\d+)\b
+  ncit_tissue:
+    category: Anatomy
+    orig_regex: ^NCIT?[:_](?<id>C\d+)$
+    pattern: \bNCIT?[:_](?P<id>C\d+)\b
+  omim_gene:
+    category: Gene
+    orig_regex: ^(?:O?MIM:)?(?<id>\d{6})$
+    pattern: \b(?:O?MIM:)(?P<id>\d{6})\b
+  omim_phenotype:
+    category: Phenotype
+    orig_regex: ^(?:O?MIM:)?(?<id>\d{6})$
+    pattern: \b(?:O?MIM:)(?P<id>\d{6})\b
+  orphanet_gene:
+    category: Gene
+    orig_regex: ^(?:ORPHA|ORDO|Orphanet)[:_](?<id>[A-Z0-9]+)$
+    pattern: \b(?:ORPHA|ORDO|Orphanet)[:_](?P<id>[A-Z0-9]+)\b
+  orphanet_phenotype:
+    category: Phenotype
+    orig_regex: ^(?:ORPHA|ORDO|Orphanet)[:_](?<id>[A-Z0-9]+)$
+    pattern: \b(?:ORPHA|ORDO|Orphanet)[:_](?P<id>[A-Z0-9]+)\b
+  pfam:
+    category: Domain
+    orig_regex: ^(?<id>PF\d{5})$
+    pattern: \b(?P<id>PF\d{5})\b
+  pmc:
+    category: Literature
+    orig_regex: ^(?:PMC)?(?<id>\d+)$
+    pattern: \b(?:PMC)(?P<id>\d+)\b
+    uri: http://identifiers.org/pmc/PMC
+  prosite:
+    category: Domain
+    orig_regex: ^(?<id>PS\d{5})$
+    pattern: \b(?P<id>PS\d{5})\b
+  prosite_prorule:
+    category: AnnotationRule
+    orig_regex: ^(?<id>PRU\d{5})$
+    pattern: \b(?P<id>PRU\d{5})\b
+  pubchem_pathway:
+    category: Pathway
+    orig_regex: ^(?:PWID)?(?<id>\d+)$
+    pattern: \b(?:PWID)(?P<id>\d+)\b
+  pubmed:
+    category: Literature
+    orig_regex: ^(?:pmid:|PMID:)?(?<id>\d+)$
+    pattern: \b(?:pmid:|PMID:)(?P<id>\d+)\b
+  reactome_pathway:
+    category: Pathway
+    orig_regex: ^(?<id>R-[A-Z]{3}-\d+)(?:\.\d+)?$
+    pattern: \b(?P<id>R-[A-Z]{3}-\d+)(?:\.\d+)?\b
+  reactome_reaction:
+    category: Reaction
+    orig_regex: ^(?<id>R-[A-Z]{3}-\d+)(?:\.\d+)?$
+    pattern: \b(?P<id>R-[A-Z]{3}-\d+)(?:\.\d+)?\b
+  refseq_genomic:
+    category: Gene
+    orig_regex: ^(?<id>(?:AC_|N[CGTW]_)\d{6}(?:\d{3})?|NZ_[A-Z]+\d+)(?:\.\d{1,2})?$
+    pattern: \b(?P<id>(?:AC_|N[CGTW]_)\d{6}(?:\d{3})?|NZ_[A-Z]+\d+)(?:\.\d{1,2})?\b
+  refseq_protein:
+    category: Protein
+    orig_regex: ^(?<id>[ANXYWZ]P_\d{6}(?:\d{3})?)(?:\.\d{1,2})?$
+    pattern: \b(?P<id>[ANXYWZ]P_\d{6}(?:\d{3})?)(?:\.\d{1,2})?\b
+  refseq_rna:
+    category: Transcript
+    orig_regex: ^(?<id>(?:NM|NR|XM|XR)_\d{6}(?:\d{3})?)(?:\.\d{1,2})?$
+    pattern: \b(?P<id>(?:NM|NR|XM|XR)_\d{6}(?:\d{3})?)(?:\.\d{1,2})?\b
+  rgd:
+    category: Gene
+    orig_regex: ^(?:(?:RGD|rgd):)?(?<id>\d{4,})$
+    pattern: \b(?:(?:RGD|rgd):)(?P<id>\d{4,})\b
+    uri: http://identifiers.org/rgd/
+  rnacentral:
+    category: Transcript
+    orig_regex: ^(?<id>URS[0-9A-F]{10}\_\d+)$
+    pattern: \b(?P<id>URS[0-9A-F]{10}\_\d+)\b
+  sio:
+    category: Classification
+    orig_regex: ^SIO[:_](?<id>\d{6})$
+    pattern: \bSIO[:_](?P<id>\d{6})\b
+  smart:
+    category: Domain
+    orig_regex: ^(?<id>SM\d{5})$
+    pattern: \b(?P<id>SM\d{5})\b
+  sra_analysis:
+    category: Analysis
+    orig_regex: ^(?<id>[SED]RZ\d+)$
+    pattern: \b(?P<id>[SED]RZ\d+)\b
+    uri: http://identifiers.org/insdc.sra/
+  sra_experiment:
+    category: Experiment
+    orig_regex: ^(?<id>[SED]RX\d+)$
+    pattern: \b(?P<id>[SED]RX\d+)\b
+    uri: http://identifiers.org/insdc.sra/
+  swisslipids:
+    category: Lipid
+    orig_regex: ^SLM[:_](?<id>\d+)$
+    pattern: \bSLM[:_](?P<id>\d+)\b
+  tair:
+    category: Gene
+    orig_regex: ^(?<id>AT.G\d{5})(?:\.\d+)?$
+    pattern: \b(?P<id>AT.G\d{5})(?:\.\d+)?\b
+  togovar:
+    category: Variant
+    orig_regex: ^(?<id>tgv\d+)$
+    pattern: \b(?P<id>tgv\d+)\b
+  uberon:
+    category: Anatomy
+    orig_regex: ^UBERON[:_](?<id>\d{7})$
+    pattern: \bUBERON[:_](?P<id>\d{7})\b
+  uniparc:
+    category: Protein
+    orig_regex: ^(?<id>UPI[A-F0-9]{10})$
+    pattern: \b(?P<id>UPI[A-F0-9]{10})\b
+  uniprot_isoform:
+    category: Protein
+    orig_regex: ^(?:(?<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+))|(?<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)))$
+    pattern: \b(?:(?P<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+))|(?P<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)))\b
+  vgnc:
+    category: Gene
+    orig_regex: ^(?:(?:VGNC|vgnc):)?(?<id>\d{1,9})$
+    pattern: \b(?:(?:VGNC|vgnc):)(?P<id>\d{1,9})\b
+  wormbase_gene:
+    category: Gene
+    orig_regex: ^(?<id>WBGene\d{8})$
+    pattern: \b(?P<id>WBGene\d{8})\b
+    uri: http://identifiers.org/wb/
+  xenbase_gene:
+    category: Gene
+    orig_regex: ^(?<id>XB\-[A-Z]+\-\d+)$
+    pattern: \b(?P<id>XB\-[A-Z]+\-\d+)\b
+    uri: http://identifiers.org/xenbase/
+  zfin_gene:
+    category: Gene
+    orig_regex: ^(?<id>ZDB\-[A-Z]+\-\d{6}\-\d+)$
+    pattern: \b(?P<id>ZDB\-[A-Z]+\-\d{6}\-\d+)\b
+    uri: http://identifiers.org/zfin/
+  zfin_transcript:
+    category: Transcript
+    orig_regex: ^(?<id>ZDB\-[A-Z]+\-\d{6}\-\d+)$
+    pattern: \b(?P<id>ZDB\-[A-Z]+\-\d{6}\-\d+)\b
