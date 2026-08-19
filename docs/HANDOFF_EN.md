@@ -28,8 +28,6 @@ mentioned," but **does the referenced entry actually exist**, and **what role do
 
 ## 2. How this connects to Identifiers.org
 
-This is the part most relevant to you, and where collaboration is natural:
-
 - **CURIEs and prefixes everywhere.** Extracted identifiers are carried as CURIEs (`db:localid`). The
   bridge between **TogoID prefixes ↔ Identifiers.org prefixes ↔ RDF Portal native URI namespaces** is
   maintained as a "prefix relation map" (a lookup table). Reconciling these namespaces is exactly the
@@ -39,7 +37,7 @@ This is the part most relevant to you, and where collaboration is natural:
   *"does this token, found in running prose, correspond to an entry that actually exists at the source?"*
   We call that **existence verification** (details in §4). Resolution and existence verification compose
   well — a resolvable prefix plus a verified local entry is a stronger provenance signal than either alone.
-- **A finding worth sharing (stated plainly, not as criticism).** We tested whether **registry
+- **A finding worth sharing.** We tested whether **registry
   validation patterns could be reused as *extraction* patterns** over free text. They cannot on their own:
   every one of 21 audited false positives *passed the official syntax patterns*. This is expected and not a
   defect — a validation pattern answers *"is this a syntactically well-formed X accession?"*, whereas
@@ -49,7 +47,7 @@ This is the part most relevant to you, and where collaboration is natural:
 - **EBI-hosted deposit resources are our biggest recall gap.** Our deposit-side recall is currently
   bottlenecked by **ENA and PDB** (≈98% of misses), and the resources that EuropePMC extracts but we don't
   are largely **EBI deposition databases** (PRIDE, MetaboLights, EMPIAR, EMDB, BioStudies, EGA, ArrayExpress,
-  AlphaFold). You know these formats intimately — an obvious place to contribute.
+  AlphaFold).
 
 ---
 
