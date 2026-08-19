@@ -226,7 +226,6 @@ Entry points, several touching your expertise:
 
 ## Glossary
 - **PMC OA** — PubMed Central Open Access subset (full-text XML, redistributable).
-- **SPReAD** — the grant this work is associated with.
 - **TogoID / RDF Portal** — DBCLS (Japan) identifier-conversion service and SPARQL data portal.
 - **HunFlair2** — biomedical NER model (concept layer).
 - **CURIE** — compact URI, `prefix:localid`.
