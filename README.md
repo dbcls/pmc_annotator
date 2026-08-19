@@ -121,7 +121,7 @@ field records provenance, so downstream code can weight or de-duplicate by sourc
 - [`docs/HANDOFF_EN.md`](docs/HANDOFF_EN.md) — project introduction (external collaborators).
 - [`docs/HANDOFF.md`](docs/HANDOFF.md) — same, Japanese.
 - [`docs/REFERENCES.md`](docs/REFERENCES.md) — related work + comparison table.
-- [`docs/stage_b_setup.md`](docs/stage_b_setup.md) — HunFlair2 (GPU) setup.
+- [`docs/stage_b_setup.md`](docs/stage_b_setup.md) — HunFlair2 (GPU) setup (in Japanese).
 - [`REORG_REPORT.md`](REORG_REPORT.md) — repository cleanup report + open decisions.
 
 ## Citation & license
