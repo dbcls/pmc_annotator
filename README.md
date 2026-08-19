@@ -1,105 +1,33 @@
-# PMC Annotator — MVP
+# pmc-annotator
 
-PMC OA サブセットの JATS XML を入力に、PubTator Central 相当（＋拡張）の
-網羅的アノテーションを生成するパイプラインの **MVP スキャフォルド**。
+Extract life-science database identifiers from **PubMed Central (PMC)** full text, **verify that each
+referenced entry actually exists**, and **classify the role of each reference** — `created` (the paper
+deposited the data), `used` (existing data/resource reused), or `mentioned` — to build a data-usage /
+data-reuse metric.
 
-## アーキテクチャ
+> **Status:** runs end-to-end on a feasibility subset (~6.4% of the corpus, ~17.5k papers). Full-corpus
+> scale-up and the human evaluation of the role classifier are in progress.
+> A fuller introduction for external collaborators is in [`docs/HANDOFF_EN.md`](docs/HANDOFF_EN.md);
+> related work and positioning in [`docs/REFERENCES.md`](docs/REFERENCES.md).
+> 日本語版は [README.ja.md](README.ja.md)。
+
+## Pipeline
 
 ```
-PMC OA XML (数百万件)
-  ↓ [Stage A] 前処理: JATS → BioC-JSON shard (CPU並列, lxml + multiprocessing)
-  ↓ [Stage B] HunFlair2: gene/disease/chemical/species (GPU推論)
-  ↓ [Stage C] PubDictionaries: GO/Reactome/UniProt名 など (Aho-Corasick)    ← 後段
-  ↓ [Stage D] 正規表現: UniProt AC / PDB / GEO / SRA / ChEMBL / DOI など   ← 後段
-  ↓ [Stage E] TogoID 正規化: ID 相互変換 + 統合スキーマ                       ← 後段
-  ↓
-BioC-JSON (主出力) + RDF/SPARQL (オプション)
+PMC OA full-text XML
+  ├─ concept layer   : HunFlair2 NER (gene/chemical/disease/species/cell_line)      [GPU]
+  └─ identifier layer: regex + TogoID patterns  (GEO/SRA/RefSeq/UniProt/PDB/...)
+        ↓ 3-layer gate  (digit-floor + context gate + existence verification)
+        ↓ existence verification
+             ├─ T2: TogoID label graph / rdf-config native URI  (RDF Portal SPARQL)
+             └─ T3: NCBI E-utilities (RefSeq/GEO; can assert absence)
+        ↓ metrics        (usage_by_entry/db/doc/long, DB_CLASS, year distribution)
+        ↓ role classification
+             build_windows → role_prepass (rules) → build_llm_payloads → role_llm_run (LLM)
+        ↓ usage_roles.tsv  (created / used / mentioned)  →  evaluation (gold + confusion matrix)
 ```
 
-各 stage は **shard 単位で冪等**。`.done` マーカで再実行時にスキップ。
-途中で失敗しても該当 shard だけ再実行すればよい。
-
-## 現状の実装範囲 (MVP)
-
-- ✅ Stage A 前処理 (`preprocess.py`)
-  - JATS XML → セクション付き Passage (`title`/`abstract`/`introduction`/`methods`/`results`/`discussion`/`fig_caption`/`table_caption`)
-  - 文書全体オフセットの厳密保持
-  - PMCID / PMID / DOI / journal / year の取得
-  - 図表キャプションを別 passage として infon 付きで保持
-  - multiprocessing による CPU 並列、gzip JSONL shard 出力
-- ✅ Stage B HunFlair2 アノテーター (`annotate_hunflair.py`)
-  - スキャフォルドのみ (GPU 環境がある実機で動作確認が必要)
-  - EntityLinker (NEN) 込みで gene / disease / chemical / species
-- ✅ I/O ヘルパー (`io_utils.py`) — shard 読み書き、`.done` マーカ
-- ✅ オーケストレーター CLI (`pipeline.py`)
-- ✅ 前処理のユニットテスト (実機で `python tests/test_preprocess.py`)
-
-## 使い方
-
-### Stage A だけ (前処理)
-```bash
-cd src
-python pipeline.py preprocess \
-    --input /path/to/PMC_OA_xml \
-    --output ./data/intermediate \
-    --shard-size 500 \
-    --workers 16
-```
-
-### Stage B (HunFlair2 アノテーション)
-```bash
-# 別 GPU で複数並列を回したい場合は、shard を分けて別プロセスで起動
-python pipeline.py annotate \
-    --input ./data/intermediate \
-    --output ./data/output \
-    --device cuda:0
-```
-
-### A + B 一気通貫
-```bash
-python pipeline.py all \
-    --input /path/to/PMC_OA_xml \
-    --intermediate ./data/intermediate \
-    --output ./data/output
-```
-
-## 環境準備
-
-```bash
-# CPU 系
-pip install lxml pyyaml
-
-# Stage B (HunFlair2)
-pip install flair scispacy
-# 初回起動時にモデルを HuggingFace から自動DL
-```
-
-## 後段への拡張ポイント
-
-`annotate_hunflair.py` の `HunFlairAnnotator` と同じインタフェース
-(`__call__(Document) -> Document`) で以下を実装し、`pipeline.py` で
-順次適用するだけで拡張可能：
-
-- `PubDictAnnotator`: 辞書を Aho-Corasick に展開して全文マッチ
-- `RegexAnnotator`: configs/default.yaml の正規表現群を一括適用
-- `TogoIDNormalizer`: 抽出済み ID を `togoid_convertId` でバルク変換
-
-`Annotation.source` フィールドで出所を区別できるので、後段で
-出所別の信頼度重みづけや重複排除が可能。
-
-## OA 全体を回す際の運用メモ
-
-- **shard 並列**: GPU 4枚あれば、shard を 4 グループに分けて `--device cuda:N` を
-  指定したワーカを 4 つ並走させる。`.done` マーカで取り合いになるので、
-  shard ID を担当範囲で割り振るのが安全。
-- **ジョブキュー**: Celery / RQ / Airflow を使うなら、`stage_annotate` の
-  shard ループを 1 タスク = 1 shard に分解。
-- **中間ストレージ**: Parquet に寄せると DuckDB / ClickHouse から横断クエリ可能。
-  RDF/SPARQL 化するなら別途 BioC-JSON → Turtle 変換器を追加。
-- **増分更新**: PMC は毎日更新。`stage_preprocess` を差分ディレクトリに対して
-  別 shard 名前空間で回せば既存 shard を壊さず追加できる。
-
----
+Each stage is **idempotent per shard** (`.done` markers); a failed shard can be re-run on its own.
 
 ## Repository layout
 
@@ -110,18 +38,93 @@ scripts/             orchestration runners (run_oa_pipeline.py)
 tests/               unit tests (+ tests/diagnostics/ for ad-hoc diagnostic scripts)
 archive/             superseded modules — kept for reference, NOT wired into the pipeline (see REORG_REPORT.md)
 configs/, data/      config + small dictionaries + a shard_plan example (bulk data is git-ignored)
-docs/                HANDOFF (JA/EN), REFERENCES, stage-B setup
+docs/                HANDOFF (EN/JA), REFERENCES, stage-B setup
 ```
-
-## Documentation
-- `docs/HANDOFF_EN.md` — project introduction (for external collaborators).
-- `docs/HANDOFF.md` — same, in Japanese.
-- `docs/REFERENCES.md` — related work + comparison table.
-- `docs/stage_b_setup.md` — HunFlair2 (GPU) setup notes.
-- `REORG_REPORT.md` — what was moved where during the repo cleanup, and open decisions to confirm.
 
 ## Install
+
 ```bash
-pip install -e .            # core stages
-pip install -e ".[hunflair]"  # + concept layer (GPU box)
+pip install -e .              # core stages (identifier + verification + metrics + role)
+pip install -e ".[hunflair]"  # + concept layer (HunFlair2; GPU box)
+cp .env.example .env          # then fill NCBI_API_KEY / Azure creds if used
 ```
+
+## Quickstart
+
+**Concept layer (Stage A preprocess + Stage B HunFlair2):**
+```bash
+python -m pmc_annotator.pipeline all \
+    --input /path/to/PMC_OA_xml --intermediate ./data/intermediate --output ./data/output
+```
+
+**Identifier layer → verification → metrics:**
+```bash
+python -m pmc_annotator.phase_regex_togoid run \
+    --plan ./data/oa/phase1/shard_plan.json --output <out> \
+    --patterns src/pmc_annotator/data/togoid_extract_patterns.yaml \
+    --global-range 0:1000 --workers 64
+python -m pmc_annotator.verify_t2 ...      # TogoID label graph / RDF Portal
+python -m pmc_annotator.verify_t3 ...      # NCBI E-utilities
+python -m pmc_annotator.build_metrics ...  # usage_by_*, DB_CLASS
+```
+
+**Role classification:**
+```bash
+python -m pmc_annotator.build_windows \
+    --usage metrics/usage_long.tsv --parquet-dir <togoid parquet dir> \
+    --xml-root ~/PMC_xml --out windows.jsonl
+python -m pmc_annotator.role_prepass       --windows windows.jsonl --out role_prelim.tsv
+python -m pmc_annotator.build_llm_payloads --prelim role_prelim.tsv --windows windows.jsonl \
+    --out llm_payloads.jsonl --max-entities-per-doc 15
+# start a local OpenAI-compatible server (see below), then:
+python -m pmc_annotator.role_llm_run \
+    --payloads llm_payloads.jsonl --prelim role_prelim.tsv --out usage_roles.tsv \
+    --backend oss --base-url http://localhost:8001 --base-url http://localhost:8002 \
+    --model qwen3.6-27b --json-mode schema --concurrency 24
+```
+
+**Evaluation:**
+```bash
+python -m pmc_annotator.make_gold_sample --usage-roles usage_roles.tsv --windows windows.jsonl \
+    --n 300 --min-per-cell 20 --cap-per-cell 60      # -> gold_todo.tsv (label it) + gold_key.tsv
+python -m pmc_annotator.eval_roles --todo gold_todo.tsv --key gold_key.tsv
+```
+
+Console entry points (`pmc-build-windows`, `pmc-role-prepass`, `pmc-role-run`, `pmc-make-gold`,
+`pmc-eval-roles`, `pmc-annotate`) are installed by `pip install -e .`.
+
+## LLM serving (role classification)
+
+Reference setup: 2× NVIDIA L40S (46 GB), model **`Qwen/Qwen3.6-27B-FP8`**, one replica per GPU
+(data-parallel). vLLM must run with **thinking disabled** (`chat_template_kwargs.enable_thinking=false`,
+`--trust-remote-code`), **temperature ≠ 0** (Qwen3 loops at 0), and **`--max-model-len 16384`**
+(accession-dense windows tokenize above an 8192 budget). Azure OpenAI works as a fallback
+(`--backend azure`). Details in [`docs/HANDOFF_EN.md`](docs/HANDOFF_EN.md).
+
+## Operational notes (full corpus)
+
+- **Shard parallelism:** with N GPUs, split shards into N ranges and run one worker each with
+  `--device cuda:N`. Assign shard-ID ranges per worker so `.done` markers don't collide.
+- **Job queue:** to use Celery / RQ / Airflow, decompose the per-shard loop into one task per shard.
+- **Intermediate storage:** consolidating to Parquet enables cross-shard queries from DuckDB/ClickHouse.
+  For RDF/SPARQL output, add a BioC-JSON → Turtle converter.
+- **Incremental updates:** PMC updates daily; run preprocessing on the delta into a separate shard
+  namespace so existing shards are untouched.
+
+## Extending the annotators
+
+Concept/dictionary/regex annotators share one interface — `__call__(Document) -> Document` (see
+`HunFlairAnnotator`). Implement a new annotator and apply it in `pipeline.py`; the `Annotation.source`
+field records provenance, so downstream code can weight or de-duplicate by source.
+
+## Documentation
+- [`docs/HANDOFF_EN.md`](docs/HANDOFF_EN.md) — project introduction (external collaborators).
+- [`docs/HANDOFF.md`](docs/HANDOFF.md) — same, Japanese.
+- [`docs/REFERENCES.md`](docs/REFERENCES.md) — related work + comparison table.
+- [`docs/stage_b_setup.md`](docs/stage_b_setup.md) — HunFlair2 (GPU) setup.
+- [`REORG_REPORT.md`](REORG_REPORT.md) — repository cleanup report + open decisions.
+
+## Citation & license
+See [`CITATION.cff`](CITATION.cff). This project builds on **TogoID** (Ikeda et al., *Bioinformatics*
+2022, doi:10.1093/bioinformatics/btac491) and **HunFlair2** (Sänger et al., *Bioinformatics* 2024,
+doi:10.1093/bioinformatics/btae564). License: see [`LICENSE`](LICENSE) *(TODO — choose before publishing)*.
