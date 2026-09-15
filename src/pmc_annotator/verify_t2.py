@@ -6,13 +6,19 @@
 全SPARQLは https://rdfportal.org/backend/<group>/sparql を使用。
 """
 import sys, os, re, json, time, argparse, urllib.request, urllib.parse
+from pathlib import Path
 
 BACKEND = "https://rdfportal.org/backend/{group}/sparql"
 LABEL_GRAPH = "http://rdfportal.org/dataset/togoid/label/{ds}"
 DCT_ID = "http://purl.org/dc/terms/identifier"
-TOGOID_YAML = "togoid_dataset.yaml"
-REGISTRY   = "t2_registry.json"
-COVERAGE   = "t2b_coverage.json"
+_DATA_DIR = Path(__file__).parent / "data"
+# TogoID's own dataset.yaml (github.com/togoid/togoid-config, config/dataset.yaml) and
+# t2_registry.json (built by rdfconfig_to_registry.py from github.com/dbcls/rdf-config)
+# are one-time, network-heavy fetches; the generated copies live in package data so
+# every invocation finds them regardless of working directory.
+TOGOID_YAML = str(_DATA_DIR / "togoid_dataset.yaml")
+REGISTRY   = str(_DATA_DIR / "t2_registry.json")
+COVERAGE   = str(_DATA_DIR / "t2b_coverage.json")
 
 def to_backend(ep):
     if not ep: return ep

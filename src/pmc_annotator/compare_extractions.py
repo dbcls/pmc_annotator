@@ -21,6 +21,24 @@ def read_layer(path):
     return df
 
 
+def load_reconciliation(path):
+    """Per-database metadata from reconcile_namespaces.py's TSV report.
+
+    Joined onto the comparison output by dataset key (``db``) so every row
+    also carries the identifiers.org registry context (name, canonical URI,
+    deprecation, and whether the mapping is direct/split/alias/unregistered)
+    without re-deriving it here.
+    """
+    frame = pd.read_csv(path, sep='\t', dtype=str).drop_duplicates('dataset_key')
+    frame = frame.rename(columns={
+        'dataset_key': 'db',
+        'current_uri': 'registry_identifiers_org_uri',
+    })
+    return frame[['db', 'category', 'registry_prefix', 'mapping_type', 'mapping_source',
+                  'registry_status', 'registry_name', 'registry_pattern',
+                  'registry_deprecated', 'registry_identifiers_org_uri', 'review_note']]
+
+
 def passage_previews(plan_path):
     if not plan_path:
         return {}
@@ -52,13 +70,17 @@ def occurrence_details(df, prefix, previews):
     details[f'{prefix}_passage_preview'] = first['passage_preview']
     details[f'{prefix}_locations'] = frame.groupby(keys)['location'].agg('; '.join)
     details[f'{prefix}_occurrence_count'] = frame.groupby(keys).size()
+    if prefix == 'togoid':
+        details['togoid_identifier'] = first['identifier']
+        details['togoid_curie'] = first['curie']
+        details['togoid_identifiers_org_url'] = first['curie']
     if prefix == 'epmc':
         details['identifiers_org_url'] = first.get('raw_uri', first.get('curie', ''))
         details['europepmc_annotation_url'] = first.get('ann_id', '')
     return details.reset_index()
 
 
-def compare(left, right, out, plan_path=None):
+def compare(left, right, out, plan_path=None, reconciliation_path=None):
     keys = ['doc_id', 'db', 'surface']
     previews = passage_previews(plan_path)
     result = occurrence_details(left, 'togoid', previews).merge(
@@ -68,8 +90,15 @@ def compare(left, right, out, plan_path=None):
     result['europepmc_article_url'] = result.doc_id.map(
         lambda doc_id: f'https://europepmc.org/article/PMC/{doc_id[3:]}'
         if str(doc_id).startswith('PMC') else '')
+
+    reconciliation = load_reconciliation(reconciliation_path) if reconciliation_path else None
+    if reconciliation is not None:
+        result = result.merge(reconciliation, on='db', how='left')
+
     result.sort_values(keys).to_csv(out / 'comparison.tsv', sep='\t', index=False)
     counts = result.groupby(['db', 'membership']).size().unstack(fill_value=0)
+    if reconciliation is not None:
+        counts = counts.merge(reconciliation.set_index('db'), left_index=True, right_index=True, how='left')
     counts.to_csv(out / 'by_database.tsv', sep='\t')
     summary = {k: int((result.membership == k).sum())
                for k in ('both', 'togoid_only', 'europepmc_only')}
@@ -99,12 +128,15 @@ def main():
     ap.add_argument('--epmc', required=True)
     ap.add_argument('--output', required=True)
     ap.add_argument('--plan', help='Optional shard plan for local XML passage previews')
+    ap.add_argument('--reconciliation',
+                     help='Optional namespace_reconciliation.tsv (from reconcile_namespaces.py); '
+                          'joined onto compare output by dataset key for registry name/URI/status')
     args = ap.parse_args()
     left, right = read_layer(args.togoid), read_layer(args.epmc)
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     if args.command == 'compare':
-        compare(left, right, out, args.plan)
+        compare(left, right, out, args.plan, args.reconciliation)
     else:
         merge(left, right, out)
 

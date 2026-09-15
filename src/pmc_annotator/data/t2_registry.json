@@ -1,0 +1,932 @@
+[
+ {
+  "db": "amrportal",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "bacdive",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/bacdive",
+  "loaded": true,
+  "subj_uri_ns": "https://purl.dsmz.de/bacdive/strain/",
+  "example": "38",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "bgee",
+  "endpoint": "https://rdfportal.org/sib/sparql",
+  "graph": "http://bgee.org",
+  "loaded": true,
+  "subj_uri_ns": "http://bgee.org/#",
+  "example": "EXPRESSION_281674",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "biosample",
+  "endpoint": "https://rdfportal.org/ebi/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/biosample/",
+  "example": "SAMD00222921",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "bmrb",
+  "endpoint": "https://rdfportal.org/pdb/sparql",
+  "graph": "http://bmrbpub.protein.osaka-u.ac.jp/rdf/bmr",
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "brenda",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/brenda",
+  "loaded": true,
+  "subj_uri_ns": "https://purl.dsmz.de/brenda/enzyme/",
+  "example": "18",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "ccle",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "https://portals.broadinstitute.org/ccle/page?cell_line=",
+  "example": "DMS53_LUNG",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "cellosaurus",
+  "endpoint": "https://rdfportal.org/sib/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "https://purl.expasy.org/cellosaurus/rdf/cvcl/",
+  "example": "BN77d5a9eaae624960be857524f70cf8f3",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "chebi",
+  "endpoint": "https://rdfportal.org/ebi/sparql",
+  "graph": "http://rdf.ebi.ac.uk/dataset/chebi",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.obolibrary.org/obo/",
+  "example": "CHEBI_35213",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "chembl",
+  "endpoint": "https://rdfportal.org/ebi/sparql",
+  "graph": "http://rdf.ebi.ac.uk/dataset/chembl",
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.ebi.ac.uk/resource/chembl/molecule/",
+  "example": "CHEMBL2068513",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "chip-atlas",
+  "endpoint": "https://integbio.jp/togosite/sparql",
+  "graph": "http://rdf.integbio.jp/dataset/togosite/chip_atlas",
+  "loaded": true,
+  "subj_uri_ns": "http://chip-atlas.org/resources/",
+  "example": "SRX2493169-ENSG00000275700",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "civic",
+  "endpoint": "http://sparql.med2rdf.org/sparql",
+  "graph": "http://med2rdf.org/graph/civic",
+  "loaded": true,
+  "subj_uri_ns": "http://civic.genome.wustl.edu/links/genes/",
+  "example": "10",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "clinvar",
+  "endpoint": "https://rdfportal.org/ncbi/sparql",
+  "graph": "http://rdfportal.org/dataset/clinvar",
+  "loaded": true,
+  "subj_uri_ns": "http://ncbi.nlm.nih.gov/clinvar/variation/",
+  "example": "209597",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "dbcatalog",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/dbcatalog/main",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/bio/03/dbcatalog/",
+  "example": "nbdc00448",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "dbnsfp",
+  "endpoint": "https://rdfportal.org/med2rdf/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.ebi.ac.uk/resource/ensembl/",
+  "example": "ENSG00000187634",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "dbscsnv",
+  "endpoint": "https://rdfportal.org/med2rdf/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "dbsnp",
+  "endpoint": "http://sparql.med2rdf.org/sparql",
+  "graph": null,
+  "loaded": false,
+  "subj_uri_ns": "http://identifiers.org/dbsnp",
+  "example": "1000017372",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "dbvar",
+  "endpoint": "https://test91.biosciencedbc.jp/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://med2rdf.org/dbvar/variant_call/",
+  "example": "essv1",
+  "queryable": false,
+  "needs_review": true
+ },
+ {
+  "db": "ddbj",
+  "endpoint": "https://rdfportal.org/ddbj/sparql",
+  "graph": "http://rdfportal.org/dataset/ddbj",
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/insdc/",
+  "example": "AP014957.1",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "dgidb",
+  "endpoint": "http://sparql.med2rdf.org/sparql",
+  "graph": "http://med2rdf.org/graph/dgidb",
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/dgidb/interaction/",
+  "example": "d3ecfd9a-f84c-40f5-a420-eb9584ebd689",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "disgenet",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/disgenet",
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "ensembl",
+  "endpoint": "https://rdfportal.org/ebi/sparql",
+  "graph": "http://rdfportal.org/dataset/ensembl",
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.ebi.ac.uk/resource/ensembl/",
+  "example": "ENSG00000000003",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "exac",
+  "endpoint": "http://sparql.med2rdf.org/sparql",
+  "graph": null,
+  "loaded": false,
+  "subj_uri_ns": "http://identifiers.org/exac.variant/",
+  "example": "4-100197800-C-T",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "expressionatlas",
+  "endpoint": "https://rdfportal.org/ebi/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.ebi.ac.uk/resource/expressionatlas/",
+  "example": "E-GEOD-56087",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "famsbase",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://fams.bio.chuo-u.ac.jp/GPCR/rdf/",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/bio/01/famsbase/",
+  "example": "2RH1_A_ref_NP_000673.2",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "fanta_bio",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://fanta.bio/cre/",
+  "example": "FCHS_104205",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "ggdonto",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://jcggdb.jp/rdf/diseases/ggdonto",
+  "loaded": true,
+  "subj_uri_ns": "http://jcggdb.jp/rdf/diseases/ggdonto#",
+  "example": "CON00634",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "glycoepitope",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdf.glycoinfo.org/glycoepitope",
+  "loaded": true,
+  "subj_uri_ns": "http://www.glycoepitope.jp/epitopes/",
+  "example": "EP0001",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "glycosmos",
+  "endpoint": "https://ts.glycosmos.org/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.glycoinfo.org/glycan/",
+  "example": "G67988RO",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "glytoucan",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdf.glycoinfo.org/glytoucan",
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.glycoinfo.org/glycan/",
+  "example": "G00054MO",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "go",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/ontology/go",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.obolibrary.org/obo/",
+  "example": "GO_0044255",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "gtdb",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/gtdb/",
+  "example": "GB_GCA_000003645.1",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "gwascatalog",
+  "endpoint": "https://togovar.org/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://www.ebi.ac.uk/gwas/studies/",
+  "example": "GCST004495",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "hco",
+  "endpoint": "http://sparql.med2rdf.org/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/hco/",
+  "example": "HumanChromosome",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "hgnc",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/hgnc",
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/hgnc/",
+  "example": "11998",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "hint",
+  "endpoint": "http://sparql.med2rdf.org/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/10/hint/",
+  "example": "A0A024QYV7-Q00653",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "homologene",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/homologene",
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/homologene/",
+  "example": "3",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "hop",
+  "endpoint": "https://orth.dbcls.jp/sparql-dev",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://purl.org/net/orthordf/hOP/group/",
+  "example": "1",
+  "queryable": false,
+  "needs_review": true
+ },
+ {
+  "db": "hpo",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/ontology/hp",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.obolibrary.org/obo/",
+  "example": "HP_0001903",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "imethyl",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/bio/10/imethyl/dataset/",
+  "example": "1",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "instruct",
+  "endpoint": "http://sparql.med2rdf.org/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/10/instruct/",
+  "example": "Q05513-PF00130_Q05513-PF00069",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "interview-form",
+  "endpoint": "http://sparql.med2rdf.org/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://med2rdf.org/if/yjcode/",
+  "example": "2590014F1021",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "jcm",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://metadb.riken.jp/db/xsearch_jcm_brso",
+  "loaded": true,
+  "subj_uri_ns": "http://metadb.riken.jp/db/rikenbrc_jcm_microbe/",
+  "example": "JCM_10004",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "jogo",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://jogo.csml.org/rdf/gene/",
+  "example": "ALDH2",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "jpostdb",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://jpost.org/graph/database",
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.jpostdb.org/entry/",
+  "example": "JPST000810",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "kero",
+  "endpoint": "https://rdfportal.org/kero/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://kero.hgc.jp/rdf/sample/",
+  "example": "s_18",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "knapsack",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://purl.jp/knapsack/",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/knapsack/resource#",
+  "example": "KnapsackBiologicalActivity",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "ligandbox",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://purl.jp/bio/5/ligandbox/",
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "linked_icgc",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://icgc.link/release_20",
+  "loaded": true,
+  "subj_uri_ns": "http://icgc.link/Mutation/",
+  "example": "MU10064858",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "massbank",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "https://identifiers.org/massbank/",
+  "example": "MSBNK-CASMI_2016-SM828451#Dataset",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "mbgd",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://mbgd.genome.ad.jp/rdf/resource/default",
+  "loaded": true,
+  "subj_uri_ns": "http://mbgd.genome.ad.jp/rdf/resource/cluster/",
+  "example": "2018-01_default_3927",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "medgen",
+  "endpoint": "https://rdfportal.org/ncbi/sparql",
+  "graph": "http://rdfportal.org/dataset/medgen",
+  "loaded": true,
+  "subj_uri_ns": "http://www.ncbi.nlm.nih.gov/medgen/",
+  "example": "C0023467",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "mediadive",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/mediadive/",
+  "loaded": true,
+  "subj_uri_ns": "https://purl.dsmz.de/mediadive/growth/",
+  "example": "1136",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "mesh",
+  "endpoint": "https://id.nlm.nih.gov/mesh/sparql",
+  "graph": "http://id.nlm.nih.gov/mesh",
+  "loaded": true,
+  "subj_uri_ns": "http://id.nlm.nih.gov/mesh/",
+  "example": "M0000001",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "mogplus",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/mogplus/bioresource/",
+  "example": "FLS_Shi",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "mondo",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/ontology/mondo",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.obolibrary.org/obo/",
+  "example": "MONDO_0020680",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "mp",
+  "endpoint": "https://rdfportal.org/bioportal/sparql",
+  "graph": "http://rdfportal.org/dataset/bioportal/mp",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.obolibrary.org/obo/",
+  "example": "MP_0000026",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "nadd",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://purl.jp/bio/18/nadd/",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/bio/18/nadd/",
+  "example": "monad0024",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "nando",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://nanbyodata.jp/ontology/nando",
+  "loaded": true,
+  "subj_uri_ns": "http://nanbyodata.jp/ontology/NANDO_",
+  "example": "1200799",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "naro_genebank",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/naro_genebank",
+  "loaded": true,
+  "subj_uri_ns": "https://www.gene.affrc.go.jp/databases-micro_search_detail.php?maff=",
+  "example": "101029",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "nbrc",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://purl.jp/bio/103/nite/culture/",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/bio/103/nite/cultures/",
+  "example": "NBRC_00012843",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "nbrp",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://shigen.nig.ac.jp/bioresource-search/api/pathogenic/fungi/",
+  "example": "IFM_40004",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "ncbigene",
+  "endpoint": "https://rdfportal.org/ncbi/sparql",
+  "graph": "http://rdfportal.org/dataset/ncbigene",
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/ncbigene/",
+  "example": "34",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "ncgm",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "ncit",
+  "endpoint": "https://rdfportal.org/bioportal/sparql",
+  "graph": "http://rdfportal.org/dataset/bioportal/ncit",
+  "loaded": true,
+  "subj_uri_ns": "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#",
+  "example": "C1000",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "nextprot",
+  "endpoint": "https://integbio.jp/togosite/sparql",
+  "graph": "http://rdf.integbio.jp/dataset/togosite/nextprot",
+  "loaded": true,
+  "subj_uri_ns": "http://nextprot.org/rdf/entry/",
+  "example": "NX_Q04760",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "nikkaji",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/nikkaji/main",
+  "loaded": true,
+  "subj_uri_ns": "http://stirdf.jst.go.jp/id/",
+  "example": "200907064180837475",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "nlm-catalog",
+  "endpoint": "https://rdfportal.org/ncbi/sparql",
+  "graph": "http://rdfportal.org/dataset/nlm_catalog",
+  "loaded": true,
+  "subj_uri_ns": "http://www.ncbi.nlm.nih.gov/nlmcatalog/",
+  "example": "0431420",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "oma",
+  "endpoint": "https://sparql.omabrowser.org/sparql/",
+  "graph": "http://omabrowser.org/graph",
+  "loaded": true,
+  "subj_uri_ns": "https://omabrowser.org/oma/info/",
+  "example": "ARATH11488",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "opentggates",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/open-tggates",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/bio/101/opentggates/Probe/",
+  "example": "1367452_at",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "paconto",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://jcggdb.jp/rdf/diseases/paconto",
+  "loaded": true,
+  "subj_uri_ns": "http://jcggdb.jp/rdf/diseases/paconto#",
+  "example": "DIS093",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "pdb",
+  "endpoint": "https://rdfportal.org/pdb/sparql",
+  "graph": "http://rdfportal.org/dataset/pdbj",
+  "loaded": true,
+  "subj_uri_ns": "https://rdf.wwpdb.org/pdb/",
+  "example": "5KE7",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "pgdbj",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://pgdbj.jp/od/",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/bio/11/orth#",
+  "example": "Dataset",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "polyinfo",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://rdfportal.org/dataset/polyinfo",
+  "loaded": true,
+  "subj_uri_ns": "http://dice.nims.go.jp/ontology/polymer-bio-ont/Biodeg#",
+  "example": "BDG000001",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "pubcasefinder",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "https://pubcasefinder.dbcls.jp/rdf",
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/mim/",
+  "example": "103580",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "pubchem",
+  "endpoint": "https://rdfportal.org/pubchem/sparql",
+  "graph": "http://rdf.ncbi.nlm.nih.gov/pubchem/compound",
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.ncbi.nlm.nih.gov/pubchem/compound/",
+  "example": "CID3835861",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "pubmed",
+  "endpoint": "https://rdfportal.org/ncbi/sparql",
+  "graph": "http://rdfportal.org/dataset/pubmed",
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.ncbi.nlm.nih.gov/pubmed/",
+  "example": "31558841",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "pubtator",
+  "endpoint": "https://rdfportal.org/ncbi/sparql",
+  "graph": "http://rdfportal.org/dataset/pubtator_central",
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "quanto",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://quanto.dbcls.jp",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.jp/bio/01/quanto/resource/",
+  "example": "ERR026579_1_fastqc",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "reactome",
+  "endpoint": "https://rdfportal.org/ebi/sparql",
+  "graph": "http://rdf.ebi.ac.uk/dataset/reactome",
+  "loaded": true,
+  "subj_uri_ns": "http://www.reactome.org/biopax/84/48887#",
+  "example": "Pathway655",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "refex",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://refex.dbcls.jp/rdf/fantom5",
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "rhea",
+  "endpoint": "https://rdfportal.org/sib/sparql",
+  "graph": "http://rdfportal.org/dataset/rhea",
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.rhea-db.org/",
+  "example": "10024",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "sra_experiment",
+  "endpoint": "https://rdfportal.org/ddbj/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/insdc.sra/",
+  "example": "ERX556144",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "ssbd",
+  "endpoint": "https://rdfportal.org/primary/sparql",
+  "graph": "http://metadb.riken.jp/db/SSBD",
+  "loaded": true,
+  "subj_uri_ns": "http://metadb.riken.jp/db/SSBD/",
+  "example": "1a0b3ab7-fc17-45a4-a1d6-29d4cc03f4d5",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "tcga",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "https://portal.gdc.cancer.gov/projects/",
+  "example": "TCGA-LUSC",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "test",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "togoid",
+  "endpoint": "https://rdfportal.org/togoid/sparql",
+  "graph": "http://rdfportal.org/dataset/togoid/label/atc",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.uniprot.org/uniprot/",
+  "example": "Q6V4H0",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "togomedium",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": null,
+  "example": null,
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "togovar",
+  "endpoint": "https://grch38.togovar.org/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://identifiers.org/hco/12/GRCh38#",
+  "example": "12\\/GRCh38#111803962-G-A",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "uberon",
+  "endpoint": "https://rdfportal.org/bioportal/sparql",
+  "graph": "http://rdfportal.org/dataset/bioportal/uberon",
+  "loaded": true,
+  "subj_uri_ns": "http://purl.obolibrary.org/obo/",
+  "example": "UBERON_0002048",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "uniprot",
+  "endpoint": "https://rdfportal.org/sib/sparql",
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://purl.uniprot.org/uniprot/",
+  "example": "Q9BYF1",
+  "queryable": true,
+  "needs_review": false
+ },
+ {
+  "db": "vg",
+  "endpoint": null,
+  "graph": null,
+  "loaded": true,
+  "subj_uri_ns": "http://example.org/vg/path/",
+  "example": "x",
+  "queryable": false,
+  "needs_review": false
+ },
+ {
+  "db": "wurcs",
+  "endpoint": "https://sparql.glyconavi.org/sparql",
+  "graph": "http://rdf.glycoinfo.org/wurcs/0.5.1",
+  "loaded": true,
+  "subj_uri_ns": "http://rdf.glycoinfo.org/glycan/",
+  "example": "G00003VQ",
+  "queryable": true,
+  "needs_review": false
+ }
+]

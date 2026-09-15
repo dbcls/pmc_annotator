@@ -63,6 +63,9 @@ def main():
     ap.add_argument("--out-dir", default="metrics")
     ap.add_argument("--min-confidence", choices=["all","high"], default="all")
     ap.add_argument("--doc-year", default=None, help="doc_year.tsv (doc_id<TAB>year) 指定時 usage_by_year.tsv を出す")
+    ap.add_argument("--reconciliation", default=None,
+                    help="namespace_reconciliation.tsv (reconcile_namespaces.py). "
+                         "指定時、各行に identifiers.org CURIE/URI を付与する")
     a=ap.parse_args()
     import os; os.makedirs(a.out_dir, exist_ok=True)
     c=duckdb.connect()
@@ -83,6 +86,24 @@ def main():
             delim='\t', header=false,
             columns={{'doc_id':'VARCHAR','year':'VARCHAR'}});""")
 
+    has_registry = bool(a.reconciliation)
+    if has_registry:
+        c.execute(f"""CREATE VIEW registry AS
+          SELECT dataset_key AS dataset, registry_name,
+                 NULLIF(current_uri, '') AS identifiers_org_uri
+          FROM read_csv('{a.reconciliation}', delim='\t', header=true, quote='')
+          QUALIFY row_number() OVER (PARTITION BY dataset_key) = 1;""")
+    registry_join = "LEFT JOIN registry r ON base.dataset=r.dataset" if has_registry else ""
+    # any_value() because these are constant per (dataset) within each GROUP BY,
+    # but DuckDB can't infer that functional dependency through the join itself.
+    registry_cols_id = (", any_value(r.registry_name) AS registry_name, "
+                         "any_value(r.identifiers_org_uri) AS identifiers_org_uri, "
+                         "any_value(r.identifiers_org_uri || base.id) AS identifiers_org_curie"
+                         if has_registry else "")
+    registry_cols_db = (", any_value(r.registry_name) AS registry_name, "
+                         "any_value(r.identifiers_org_uri) AS identifiers_org_uri"
+                         if has_registry else "")
+
     conf_filter = "AND m.confidence='high'" if a.min_confidence=="high" else ""
     c.execute(f"""CREATE VIEW base AS
       SELECT m.doc_id, v.dataset, v.id, v.oracle, m.confidence,
@@ -95,18 +116,18 @@ def main():
     od=a.out_dir
     def dump(sql,path): c.execute(f"COPY ({sql}) TO '{od}/{path}' (FORMAT CSV, DELIMITER '\t', HEADER TRUE)")
 
-    dump("""SELECT dataset,id,any_value(class) AS class,any_value(oracle) AS oracle,
-                   COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs
-            FROM base GROUP BY dataset,id ORDER BY n_docs DESC,n_mentions DESC""","usage_by_entry.tsv")
-    dump("""SELECT dataset,any_value(class) AS class,COUNT(DISTINCT id) AS n_unique_entries,
-                   COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs
-            FROM base GROUP BY dataset ORDER BY n_unique_entries DESC""","usage_by_db.tsv")
+    dump(f"""SELECT base.dataset,base.id,any_value(class) AS class,any_value(oracle) AS oracle,
+                   COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs{registry_cols_id}
+            FROM base {registry_join} GROUP BY base.dataset,base.id ORDER BY n_docs DESC,n_mentions DESC""","usage_by_entry.tsv")
+    dump(f"""SELECT base.dataset,any_value(class) AS class,COUNT(DISTINCT id) AS n_unique_entries,
+                   COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs{registry_cols_db}
+            FROM base {registry_join} GROUP BY base.dataset ORDER BY n_unique_entries DESC""","usage_by_db.tsv")
     dump("""SELECT doc_id,COUNT(DISTINCT id) AS n_entries,COUNT(DISTINCT dataset) AS n_dbs,
                    string_agg(DISTINCT dataset,',') AS dbs
             FROM base GROUP BY doc_id ORDER BY n_entries DESC""","usage_by_doc.tsv")
-    dump("""SELECT doc_id,dataset,id,any_value(class) AS class,any_value(oracle) AS oracle,
-                   any_value(confidence) AS confidence,COUNT(*) AS n_in_doc
-            FROM base GROUP BY doc_id,dataset,id ORDER BY doc_id,dataset,id""","usage_long.tsv")
+    dump(f"""SELECT doc_id,base.dataset,base.id,any_value(class) AS class,any_value(oracle) AS oracle,
+                   any_value(confidence) AS confidence,COUNT(*) AS n_in_doc{registry_cols_id}
+            FROM base {registry_join} GROUP BY doc_id,base.dataset,base.id ORDER BY doc_id,base.dataset,base.id""","usage_long.tsv")
     dump("""SELECT class,COUNT(DISTINCT dataset) AS n_dbs,COUNT(DISTINCT id) AS n_entries,
                    COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs
             FROM base GROUP BY class ORDER BY n_entries DESC""","usage_by_class.tsv")

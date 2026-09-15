@@ -4,6 +4,7 @@ import json
 import re
 import time
 import unicodedata
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -37,43 +38,62 @@ def documents(plan_path):
             yield shard['shard_id'], doc
 
 
+def _fetch_one(session, out, doc, article_id, refresh, rate_delay):
+    """One article's request; run concurrently across threads, one file each."""
+    path = out / (article_id.replace(':', '_') + '.json')
+    if path.exists() and not refresh:
+        cached = json.loads(path.read_text())
+        if cached.get('doc_id') != doc.id:
+            raise ValueError('Cache paper mismatch: ' + str(path))
+        return article_id, 'skipped', None
+    try:
+        response = session.get(API, params={
+            'articleIds': article_id, 'format': 'JSON-LD',
+            'type': 'Accession Numbers', 'provider': 'Europe PMC'}, timeout=60)
+        response.raise_for_status()
+        payload = response.json()
+        annotations(payload)  # fail on unexpected response structures
+        record = dict(doc_id=doc.id, requested_article_ids=[article_id],
+                      retrieved_at=datetime.now(timezone.utc).isoformat(),
+                      response=payload)
+        temp = path.with_suffix('.tmp')
+        temp.write_text(json.dumps(record, ensure_ascii=False))
+        temp.replace(path)
+        return article_id, 'fetched', None
+    except (requests.RequestException, ValueError) as exc:
+        return article_id, 'failed', str(exc)
+    finally:
+        time.sleep(rate_delay)
+
+
 def fetch(args):
     """Cache each request separately; errors never become successful empty results."""
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     session = requests.Session()
-    session.mount('https://', HTTPAdapter(max_retries=Retry(
-        total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
+    pool_size = max(args.workers, 10)
+    session.mount('https://', HTTPAdapter(
+        max_retries=Retry(total=3, backoff_factor=1,
+                          status_forcelist=[429, 500, 502, 503, 504]),
+        pool_connections=pool_size, pool_maxsize=pool_size))
+
+    work = [(doc, article_id)
+            for _, doc in documents(args.plan)
+            for article_id in (['PMC:' + doc.id[3:]] +
+                                (['MED:' + doc.pmid] if args.include_med and doc.pmid else []))]
+
     failures = []
-    for _, doc in documents(args.plan):
-        ids = ['PMC:' + doc.id[3:]]
-        if args.include_med and doc.pmid:
-            ids.append('MED:' + doc.pmid)
-        for article_id in ids:
-            path = out / (article_id.replace(':', '_') + '.json')
-            if path.exists() and not args.refresh:
-                cached = json.loads(path.read_text())
-                if cached.get('doc_id') != doc.id:
-                    raise ValueError('Cache paper mismatch: ' + str(path))
-                continue
-            try:
-                response = session.get(API, params={
-                    'articleIds': article_id, 'format': 'JSON-LD',
-                    'type': 'Accession Numbers', 'provider': 'Europe PMC'}, timeout=60)
-                response.raise_for_status()
-                payload = response.json()
-                annotations(payload)  # fail on unexpected response structures
-                record = dict(doc_id=doc.id, requested_article_ids=[article_id],
-                              retrieved_at=datetime.now(timezone.utc).isoformat(),
-                              response=payload)
-                temp = path.with_suffix('.tmp')
-                temp.write_text(json.dumps(record, ensure_ascii=False))
-                temp.replace(path)
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        futures = [pool.submit(_fetch_one, session, out, doc, article_id,
+                                args.refresh, args.rate_delay)
+                   for doc, article_id in work]
+        for future in as_completed(futures):
+            article_id, status, error = future.result()
+            if status == 'fetched':
                 print(article_id, 'cached')
-            except (requests.RequestException, ValueError) as exc:
-                failures.append((article_id, str(exc)))
-                print(article_id, 'FAILED:', exc)
-            time.sleep(0.3)
+            elif status == 'failed':
+                failures.append((article_id, error))
+                print(article_id, 'FAILED:', error)
     if failures:
         raise SystemExit(f'{len(failures)} requests failed; rerun to retry missing cache files')
 
@@ -309,6 +329,9 @@ def main():
     p.add_argument('--output', required=True)
     p.add_argument('--include-med', action='store_true', help='Also query MED abstract annotations')
     p.add_argument('--refresh', action='store_true')
+    p.add_argument('--workers', type=int, default=8, help='Concurrent request threads')
+    p.add_argument('--rate-delay', type=float, default=0.3,
+                   help='Seconds each worker waits after its own request (applies per thread)')
     p.set_defaults(func=fetch)
     p = sub.add_parser('normalize')
     p.add_argument('--plan', required=True)
