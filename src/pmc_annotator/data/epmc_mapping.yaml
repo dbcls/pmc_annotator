@@ -1,0 +1,48 @@
+# Namespace aliases are used only when identifiers.org has already identified
+# the namespace. They bridge Europe PMC's namespace vocabulary to this
+# pipeline's TogoID dataset keys.
+namespace_aliases:
+  ena.embl: insdc
+  biosample: biosample
+  bioproject: bioproject
+
+# Europe PMC's memberOf label is retained as an audit signal, not used as the
+# primary key. Unknown labels are deliberately not treated as conflicts.
+label_namespaces:
+  ena: [ena.embl]
+  biosamples: [biosample]
+  bioproject: [bioproject]
+  geo: [geo]
+  doi: [doi]
+
+# These are preserved in external_identifiers.parquet and never passed to
+# accession existence verification or accession comparison.
+non_accession_namespaces: [doi]
+
+# Conservative fallback rules. Both literal text and provider URI must match.
+# Unrecognized resources remain in rejected.json for review.
+rules:
+  - db: geo_series
+    surface: 'GSE\d+'
+    uri: '^https?://(?:www\.)?(?:ncbi\.nlm\.nih\.gov/geo/|identifiers\.org/geo[:/])'
+  - db: geo_sample
+    surface: 'GSM\d+'
+    uri: '^https?://(?:www\.)?(?:ncbi\.nlm\.nih\.gov/geo/|identifiers\.org/geo[:/])'
+  - db: refseq_rna
+    surface: '(?:NM|NR|XM|XR)_\d+(?:\.\d+)?'
+    uri: '^https?://(?:www\.)?(?:ncbi\.nlm\.nih\.gov/(?:nuccore|protein)/|identifiers\.org/refseq[:/])'
+  - db: refseq_protein
+    surface: '[ANXYWZ]P_\d+(?:\.\d+)?'
+    uri: '^https?://(?:www\.)?(?:ncbi\.nlm\.nih\.gov/(?:nuccore|protein)/|identifiers\.org/refseq[:/])'
+  - db: refseq_genomic
+    surface: '(?:AC_|N[CGTW]_|NZ_)[A-Z0-9]+(?:\.\d+)?'
+    uri: '^https?://(?:www\.)?(?:ncbi\.nlm\.nih\.gov/(?:nuccore|protein)/|identifiers\.org/refseq[:/])'
+  - db: uniprot
+    surface: '(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})'
+    uri: '^https?://(?:www\.uniprot\.org/(?:uniprotkb|uniprot)/|purl\.uniprot\.org/uniprot/|identifiers\.org/uniprot[:/])'
+  - db: pfam
+    surface: 'PF\d{5}'
+    uri: '^https?://(?:pfam\.xfam\.org/|www\.ebi\.ac\.uk/interpro/|identifiers\.org/pfam[:/])'
+  - db: interpro
+    surface: 'IPR\d{6}'
+    uri: '^https?://(?:www\.ebi\.ac\.uk/interpro/|identifiers\.org/interpro[:/])'

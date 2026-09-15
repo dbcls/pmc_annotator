@@ -1,0 +1,7 @@
+api_url: https://www.ebi.ac.uk/europepmc/annotations_api/annotationsByArticleIds
+provider: Europe PMC
+annotation_type: Accession Numbers
+format: JSON
+page_size: 1000
+batch_size: 10
+sleep_seconds: 0.2
