@@ -3,6 +3,7 @@ excluded:
   atc:
     category: Drug
     orig_regex: ^(?<id>[A-Z]\d{2}[A-Z]{2}\d{2})$
+    uri: http://identifiers.org/atc/
   biosample:
     category: Sample
     orig_regex: ^(?<id>SAM[NED]\w?\d+)$
@@ -14,12 +15,15 @@ excluded:
   hgnc_symbol:
     category: Gene
     orig_regex: ^(?<id>[A-Z0-9_(?:orf)\-]+\@?)$
+    uri: http://identifiers.org/hgnc.symbol/
   homologene:
     category: Ortholog
     orig_regex: ^(?<id>\d+)$
+    uri: http://identifiers.org/homologene/
   iuphar_ligand:
     category: Compound
     orig_regex: ^(?<id>\d+)$
+    uri: http://identifiers.org/iuphar.ligand/
   mbgd_gene:
     category: Gene
     orig_regex: ^(?<id>[a-z0-9]+:[A-Z0-9_\.-]+)$
@@ -29,18 +33,23 @@ excluded:
   medgen:
     category: Phenotype
     orig_regex: ^(?<id>CN?\d{4,7})$
+    uri: http://identifiers.org/medgen/
   mesh:
     category: Phenotype
     orig_regex: ^(?<id>[CD]\d{6,9})$
+    uri: http://identifiers.org/mesh/
   ncbigene:
     category: Gene
     orig_regex: ^(?<id>\d+)$
+    uri: http://identifiers.org/ncbigene/
   oma_group:
     category: Ortholog
     orig_regex: ^(?<id>[A-Z]+)$
+    uri: http://identifiers.org/oma.grp/
   oma_protein:
     category: Protein
     orig_regex: ^(?<id>[A-Z]{3}[A-Z0-9]{2}[0-9]{5,6})$
+    uri: http://identifiers.org/oma.protein/
   pathbank:
     category: Pathway
     orig_regex: ^(?<id>SMP\d+)$
@@ -51,18 +60,23 @@ excluded:
   pdb_ccd:
     category: Compound
     orig_regex: ^(?<id>(?:\w{5}|\w{1,3}))$
+    uri: http://identifiers.org/pdb-ccd/
   pubchem_compound:
     category: Compound
     orig_regex: ^(?:CID)?(?<id>\d+)$
+    uri: http://identifiers.org/pubchem.compound/
   pubchem_substance:
     category: Compound
     orig_regex: ^(?:SID)?(?<id>\d+)$
+    uri: http://identifiers.org/pubchem.substance/
   rfam:
     category: Transcript
     orig_regex: ^(?<id>RF\d{5})?$
+    uri: http://identifiers.org/rfam/
   rhea:
     category: Reaction
     orig_regex: ^(?<id>\d{5})$
+    uri: http://identifiers.org/rhea/
   sgd:
     category: Gene
     orig_regex: ^(?<id>S\d{9})$
@@ -90,20 +104,24 @@ excluded:
   uniprot:
     category: Protein
     orig_regex: ^(?:(?<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+)?)|(?<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)?)(?:\.\d+)?)$
+    uri: http://identifiers.org/uniprot/
   uniprot_mnemonic:
     category: Protein
     orig_regex: ^(?<id>[A-Z0-9]+_[A-Z0-9]{0,5})$
+    uri: http://identifiers.org/uniprot/
   uniprot_proteome:
     category: Proteome
     orig_regex: ^(?<id>UP\d{0,9})$
   wikipathways:
     category: Pathway
     orig_regex: ^(?<id>WP\d{1,5})(?:\_r\d+)?$
+    uri: http://identifiers.org/wikipathways/
 safe:
   affy_probeset:
     category: Probe
     orig_regex: ^(?<id>\d{3,}(?:_[a-z])?_at)$
     pattern: \b(?P<id>\d{3,}(?:_[a-z])?_at)\b
+    uri: http://identifiers.org/affy.probeset/
   assembly_insdc:
     category: Genome
     orig_regex: ^(?<id>GCA_\d{9})(?:\.\d+)?$
@@ -128,46 +146,57 @@ safe:
     category: Gene
     orig_regex: ^(?<id>CCDS\d+)(?:\.\d+)?$
     pattern: \b(?P<id>CCDS\d+)(?:\.\d+)?\b
+    uri: http://identifiers.org/ccds/
   cellosaurus:
     category: CellLine
     orig_regex: ^CVCL[:_](?<id>[A-Z0-9]{4})$
     pattern: \bCVCL[:_](?P<id>[A-Z0-9]{4})\b
+    uri: http://identifiers.org/cellosaurus/
   chebi:
     category: Compound
     orig_regex: ^(?:CHEBI[:_])?(?<id>\d+)$
     pattern: \b(?:CHEBI[:_])(?P<id>\d+)\b
+    uri: http://identifiers.org/chebi/
   chembl_compound:
     category: Compound
     orig_regex: ^(?<id>CHEMBL\d+)$
     pattern: \b(?P<id>CHEMBL\d+)\b
+    uri: http://identifiers.org/chembl.compound/
   chembl_target:
     category: Protein
     orig_regex: ^(?<id>CHEMBL\d+)$
     pattern: \b(?P<id>CHEMBL\d+)\b
+    uri: http://identifiers.org/chembl.target/
   cl:
     category: Anatomy
     orig_regex: ^CL[:_](?<id>\d{7})$
     pattern: \bCL[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/cl/
   clinvar:
     category: Variant
     orig_regex: ^(?:VCV0*)?(?<id>\d{1,9})$
     pattern: \b(?:VCV0*)(?P<id>\d{1,9})\b
+    uri: http://identifiers.org/clinvar/
   clo:
     category: CellLine
     orig_regex: ^CLO[:_](?<id>\d{7})$
     pattern: \bCLO[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/clo/
   cog:
     category: Ortholog
     orig_regex: ^(?<id>COG\d{4})$
     pattern: \b(?P<id>COG\d{4})\b
+    uri: http://identifiers.org/cog/
   doid:
     category: Phenotype
     orig_regex: ^DO(?:ID)?[:_](?<id>\d+)$
     pattern: \bDO(?:ID)?[:_](?P<id>\d+)\b
+    uri: http://identifiers.org/doid/
   drugbank:
     category: Drug
     orig_regex: ^(?<id>DB\d{5})$
     pattern: \b(?P<id>DB\d{5})\b
+    uri: http://identifiers.org/drugbank/
   ec:
     category: Function
     orig_regex: ^(?:EC:)?(?<id>\d+\.(?:(?:-\.-\.-)|\d+\.(?:(?:-\.-)|\d+\.(?:-|n?\d+))))$
@@ -177,6 +206,7 @@ safe:
     category: Phenotype
     orig_regex: ^EFO[:_](?<id>\d{7})$
     pattern: \bEFO[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/efo/
   ensembl_gene:
     category: Gene
     note: 6/10 alternatives kept; removed 1 FlyBase alt(s) → flybase_*
@@ -188,26 +218,31 @@ safe:
     note: 4/7 alternatives kept; removed 1 FlyBase alt(s) → flybase_*
     orig_regex: ^(?:(?:(?<id1>ENS[A-Z]*P\d{11})(?:\.\d+)?)|(?<id2>FBpp\d{7})|(?:(?<id3>MGP_[A-Za-z0-9]+_P\d{7})(?:\.\d+)?)|(?<id4>LRG_\d+p\d+(?:-\d)?)|(?<id5>(?:[A-Za-z0-9][A-Za-z0-9_]+)\.t?\d+[a-z]?(?:\.\d+)?)|(?<id6>Y[A-Z]{2}\d{3}[A-Z](?:-[A-Z])?)|(?<id7>Q\d{4}))$
     pattern: \b(?:(?:(?P<id1>ENS[A-Z]*P\d{11})(?:\.\d+)?)|(?:(?P<id3>MGP_[A-Za-z0-9]+_P\d{7})(?:\.\d+)?)|(?P<id4>LRG_\d+p\d+(?:-\d)?))\b
+    uri: http://identifiers.org/ensembl/
   ensembl_transcript:
     category: Transcript
     note: 7/10 alternatives kept; removed 1 FlyBase alt(s) → flybase_*
     orig_regex: ^(?:(?:(?<id1>ENS[A-Z]*T\d{11})(?:\.\d+)?)|(?<id2>FBtr\d{7})|(?:(?<id3>MGP_[A-Za-z0-9]+_T\d{7})(?:\.\d+)?)|(?<id4>LRG_\d+t\d+(?:-\d)?)|(?<id5>(?:[A-Za-z0-9][A-Za-z0-9_]+)\.t?\d+[a-z]?(?:\.\d+)?)|(?<id6>Y[A-Z]{2}\d{3}[A-Z](?:-[A-Z])?(?:_[a-z]{1,3}RNA)?)|(?<id7>Q\d{4}_[a-z]{1,3}RNA)|(?<id8>[A-Z]{3}\d{1,3}(?:-\d)?_[a-z]{1,3}RNA)|(?<id9>snR\d+-?[A-Za-z]?_sno?RNA)|(?<id10>t[A-Z]\(?:[ACGUX]{3}\)[A-Z]\d?_tRNA))$
     pattern: \b(?:(?:(?P<id1>ENS[A-Z]*T\d{11})(?:\.\d+)?)|(?:(?P<id3>MGP_[A-Za-z0-9]+_T\d{7})(?:\.\d+)?)|(?P<id4>LRG_\d+t\d+(?:-\d)?)|(?P<id7>Q\d{4}_[a-z]{1,3}RNA)|(?P<id9>snR\d+-?[A-Za-z]?_sno?RNA)|(?P<id10>t[A-Z]\(?:[ACGUX]{3}\)[A-Z]\d?_tRNA))\b
+    uri: http://identifiers.org/ensembl/
   flybase_gene:
     category: Gene
     note: 'injected: FlyBase split from ensembl_* (independent db)'
     orig_regex: FBgn\d{7}
     pattern: \bFBgn\d{7}\b
+    uri: http://identifiers.org/fb/
   flybase_protein:
     category: Protein
     note: 'injected: FlyBase split from ensembl_* (independent db)'
     orig_regex: FBpp\d{7}
     pattern: \bFBpp\d{7}\b
+    uri: http://identifiers.org/fb/
   flybase_transcript:
     category: Transcript
     note: 'injected: FlyBase split from ensembl_* (independent db)'
     orig_regex: FBtr\d{7}
     pattern: \bFBtr\d{7}\b
+    uri: http://identifiers.org/fb/
   gea:
     category: Experiment
     orig_regex: ^(?<id>E-GEAD-\d+)$
@@ -216,10 +251,12 @@ safe:
     category: Sample
     orig_regex: ^(?<id>GSM\d+)$
     pattern: \b(?P<id>GSM\d+)\b
+    uri: http://identifiers.org/geo/
   geo_series:
     category: Project
     orig_regex: ^(?<id>GSE\d+)$
     pattern: \b(?P<id>GSE\d+)\b
+    uri: http://identifiers.org/geo/
   glycomotif:
     category: Glycan
     orig_regex: ^(?:GM\.)?(?<id>G[0-9]{5}[A-Z]{2})$
@@ -233,22 +270,27 @@ safe:
     category: Function
     orig_regex: ^GO[:_](?<id>\d{7})$
     pattern: \bGO[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/go/
   hgnc:
     category: Gene
     orig_regex: ^(?:(?:HGNC|hgnc):)?(?<id>\d{1,5})$
     pattern: \b(?:(?:HGNC|hgnc):)(?P<id>\d{1,5})\b
+    uri: http://identifiers.org/hgnc/
   hmdb:
     category: Compound
     orig_regex: ^(?:hmdb:)?(?<id>HMDB\d+)$
     pattern: \b(?:hmdb:)(?P<id>HMDB\d+)\b
+    uri: http://identifiers.org/hmdb/
   hp_inheritance:
     category: Classification
     orig_regex: ^HP[:_](?<id>\d{7})$
     pattern: \bHP[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/hp/
   hp_phenotype:
     category: Phenotype
     orig_regex: ^HP[:_](?<id>\d{7})$
     pattern: \bHP[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/hp/
   inchi_key:
     category: Compound
     orig_regex: ^(?<id>[A-Z]{14}\-[A-Z]{10}(?:\-[A-Z])?)$
@@ -268,10 +310,12 @@ safe:
     category: Interaction
     orig_regex: ^(?<id>EBI\-[0-9]+)$
     pattern: \b(?P<id>EBI\-[0-9]+)\b
+    uri: http://identifiers.org/intact/
   interpro:
     category: Domain
     orig_regex: ^(?<id>IPR\d{6})$
     pattern: \b(?P<id>IPR\d{6})\b
+    uri: http://identifiers.org/interpro/
   jga_dataset:
     category: Project
     orig_regex: ^(?<id>JGAD\d{6})$
@@ -284,22 +328,27 @@ safe:
     category: Lipid
     orig_regex: ^(?<id>LM(?:FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}(?:[0-9a-zA-Z]{4,6})?)$
     pattern: \b(?P<id>LM(?:FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}(?:[0-9a-zA-Z]{4,6})?)\b
+    uri: http://identifiers.org/lipidmaps/
   lncbook_gene:
     category: Gene
     orig_regex: ^(?<id>HSALNG[0-9]{7})$
     pattern: \b(?P<id>HSALNG[0-9]{7})\b
+    uri: http://identifiers.org/lncbook/
   lrg:
     category: Gene
     orig_regex: ^(?<id>LRG_\d+)$
     pattern: \b(?P<id>LRG_\d+)\b
+    uri: http://identifiers.org/lrg/
   meddra:
     category: Phenotype
     orig_regex: ^(?:(?:MedDRA|meddra):)?(?<id>\d+)$
     pattern: \b(?:(?:MedDRA|meddra):)(?P<id>\d+)\b
+    uri: http://identifiers.org/meddra/
   mgi_allele:
     category: Variant
     orig_regex: ^(?:MGI|mgi):(?<id>\d{5,})$
     pattern: \b(?:MGI|mgi):(?P<id>\d{5,})\b
+    uri: http://identifiers.org/mgi/
   mgi_gene:
     category: Gene
     orig_regex: ^(?:MGI|mgi):(?<id>\d{5,})$
@@ -309,26 +358,32 @@ safe:
     category: Genotype
     orig_regex: ^(?:MGI|mgi):(?<id>\d{5,})$
     pattern: \b(?:MGI|mgi):(?P<id>\d{5,})\b
+    uri: http://identifiers.org/mgi/
   mirbase:
     category: Transcript
     orig_regex: ^(?<id>MI\d{7})$
     pattern: \b(?P<id>MI\d{7})\b
+    uri: http://identifiers.org/mirbase/
   mirbase_mature:
     category: Transcript
     orig_regex: ^(?<id>MIMAT\d{7})$
     pattern: \b(?P<id>MIMAT\d{7})\b
+    uri: http://identifiers.org/mirbase.mature/
   mondo:
     category: Phenotype
     orig_regex: ^MONDO[:_](?<id>\d{7})$
     pattern: \bMONDO[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/mondo/
   mp:
     category: Phenotype
     orig_regex: ^MP[:_](?<id>\d{7})$
     pattern: \bMP[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/mp/
   nando:
     category: Phenotype
     orig_regex: ^NANDO[:_](?<id>\d{7})$
     pattern: \bNANDO[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/nando/
   nbdc_human_db:
     category: Project
     orig_regex: ^(?<id>hum\d{4})(?:[.\-]v\d+)?$
@@ -337,30 +392,37 @@ safe:
     category: Phenotype
     orig_regex: ^NCIT?[:_](?<id>C\d+)$
     pattern: \bNCIT?[:_](?P<id>C\d+)\b
+    uri: http://identifiers.org/ncit/
   ncit_tissue:
     category: Anatomy
     orig_regex: ^NCIT?[:_](?<id>C\d+)$
     pattern: \bNCIT?[:_](?P<id>C\d+)\b
+    uri: http://identifiers.org/ncit/
   omim_gene:
     category: Gene
     orig_regex: ^(?:O?MIM:)?(?<id>\d{6})$
     pattern: \b(?:O?MIM:)(?P<id>\d{6})\b
+    uri: http://identifiers.org/mim/
   omim_phenotype:
     category: Phenotype
     orig_regex: ^(?:O?MIM:)?(?<id>\d{6})$
     pattern: \b(?:O?MIM:)(?P<id>\d{6})\b
+    uri: http://identifiers.org/mim/
   orphanet_gene:
     category: Gene
     orig_regex: ^(?:ORPHA|ORDO|Orphanet)[:_](?<id>[A-Z0-9]+)$
     pattern: \b(?:ORPHA|ORDO|Orphanet)[:_](?P<id>[A-Z0-9]+)\b
+    uri: http://identifiers.org/orphanet/
   orphanet_phenotype:
     category: Phenotype
     orig_regex: ^(?:ORPHA|ORDO|Orphanet)[:_](?<id>[A-Z0-9]+)$
     pattern: \b(?:ORPHA|ORDO|Orphanet)[:_](?P<id>[A-Z0-9]+)\b
+    uri: http://identifiers.org/orphanet.ordo/
   pfam:
     category: Domain
     orig_regex: ^(?<id>PF\d{5})$
     pattern: \b(?P<id>PF\d{5})\b
+    uri: http://identifiers.org/pfam/
   pmc:
     category: Literature
     orig_regex: ^(?:PMC)?(?<id>\d+)$
@@ -370,6 +432,7 @@ safe:
     category: Domain
     orig_regex: ^(?<id>PS\d{5})$
     pattern: \b(?P<id>PS\d{5})\b
+    uri: http://identifiers.org/prosite/
   prosite_prorule:
     category: AnnotationRule
     orig_regex: ^(?<id>PRU\d{5})$
@@ -382,26 +445,32 @@ safe:
     category: Literature
     orig_regex: ^(?:pmid:|PMID:)?(?<id>\d+)$
     pattern: \b(?:pmid:|PMID:)(?P<id>\d+)\b
+    uri: http://identifiers.org/pubmed/
   reactome_pathway:
     category: Pathway
     orig_regex: ^(?<id>R-[A-Z]{3}-\d+)(?:\.\d+)?$
     pattern: \b(?P<id>R-[A-Z]{3}-\d+)(?:\.\d+)?\b
+    uri: http://identifiers.org/reactome/
   reactome_reaction:
     category: Reaction
     orig_regex: ^(?<id>R-[A-Z]{3}-\d+)(?:\.\d+)?$
     pattern: \b(?P<id>R-[A-Z]{3}-\d+)(?:\.\d+)?\b
+    uri: http://identifiers.org/reactome/
   refseq_genomic:
     category: Gene
     orig_regex: ^(?<id>(?:AC_|N[CGTW]_)\d{6}(?:\d{3})?|NZ_[A-Z]+\d+)(?:\.\d{1,2})?$
     pattern: \b(?P<id>(?:AC_|N[CGTW]_)\d{6}(?:\d{3})?|NZ_[A-Z]+\d+)(?:\.\d{1,2})?\b
+    uri: http://identifiers.org/refseq/
   refseq_protein:
     category: Protein
     orig_regex: ^(?<id>[ANXYWZ]P_\d{6}(?:\d{3})?)(?:\.\d{1,2})?$
     pattern: \b(?P<id>[ANXYWZ]P_\d{6}(?:\d{3})?)(?:\.\d{1,2})?\b
+    uri: http://identifiers.org/refseq/
   refseq_rna:
     category: Transcript
     orig_regex: ^(?<id>(?:NM|NR|XM|XR)_\d{6}(?:\d{3})?)(?:\.\d{1,2})?$
     pattern: \b(?P<id>(?:NM|NR|XM|XR)_\d{6}(?:\d{3})?)(?:\.\d{1,2})?\b
+    uri: http://identifiers.org/refseq/
   rgd:
     category: Gene
     orig_regex: ^(?:(?:RGD|rgd):)?(?<id>\d{4,})$
@@ -411,14 +480,17 @@ safe:
     category: Transcript
     orig_regex: ^(?<id>URS[0-9A-F]{10}\_\d+)$
     pattern: \b(?P<id>URS[0-9A-F]{10}\_\d+)\b
+    uri: http://identifiers.org/rnacentral/
   sio:
     category: Classification
     orig_regex: ^SIO[:_](?<id>\d{6})$
     pattern: \bSIO[:_](?P<id>\d{6})\b
+    uri: http://identifiers.org/sio/
   smart:
     category: Domain
     orig_regex: ^(?<id>SM\d{5})$
     pattern: \b(?P<id>SM\d{5})\b
+    uri: http://identifiers.org/smart/
   sra_analysis:
     category: Analysis
     orig_regex: ^(?<id>[SED]RZ\d+)$
@@ -433,30 +505,37 @@ safe:
     category: Lipid
     orig_regex: ^SLM[:_](?<id>\d+)$
     pattern: \bSLM[:_](?P<id>\d+)\b
+    uri: http://identifiers.org/slm/
   tair:
     category: Gene
     orig_regex: ^(?<id>AT.G\d{5})(?:\.\d+)?$
     pattern: \b(?P<id>AT.G\d{5})(?:\.\d+)?\b
+    uri: http://identifiers.org/tair.gene/
   togovar:
     category: Variant
     orig_regex: ^(?<id>tgv\d+)$
     pattern: \b(?P<id>tgv\d+)\b
+    uri: http://identifiers.org/togovar/
   uberon:
     category: Anatomy
     orig_regex: ^UBERON[:_](?<id>\d{7})$
     pattern: \bUBERON[:_](?P<id>\d{7})\b
+    uri: http://identifiers.org/uberon/
   uniparc:
     category: Protein
     orig_regex: ^(?<id>UPI[A-F0-9]{10})$
     pattern: \b(?P<id>UPI[A-F0-9]{10})\b
+    uri: http://identifiers.org/uniparc/
   uniprot_isoform:
     category: Protein
     orig_regex: ^(?:(?<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+))|(?<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)))$
     pattern: \b(?:(?P<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+))|(?P<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)))\b
+    uri: http://identifiers.org/uniprot.isoform/
   vgnc:
     category: Gene
     orig_regex: ^(?:(?:VGNC|vgnc):)?(?<id>\d{1,9})$
     pattern: \b(?:(?:VGNC|vgnc):)(?P<id>\d{1,9})\b
+    uri: http://identifiers.org/vgnc/
   wormbase_gene:
     category: Gene
     orig_regex: ^(?<id>WBGene\d{8})$
@@ -476,3 +555,4 @@ safe:
     category: Transcript
     orig_regex: ^(?<id>ZDB\-[A-Z]+\-\d{6}\-\d+)$
     pattern: \b(?P<id>ZDB\-[A-Z]+\-\d{6}\-\d+)\b
+    uri: http://identifiers.org/zfin/

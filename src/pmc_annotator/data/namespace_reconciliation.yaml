@@ -1,0 +1,101 @@
+# Reviewed exceptions where one pipeline dataset key intentionally differs
+# from the Identifiers.org namespace prefix.  The report command also derives
+# direct mappings from explicit identifiers.org URIs in the pattern catalogue,
+# and from an exact dataset_key == registry prefix match (see
+# reconcile_namespaces.py: mapping_source == 'registry_prefix_match').
+dataset_prefixes:
+  geo_series: geo
+  geo_sample: geo
+  refseq_rna: refseq
+  refseq_protein: refseq
+  refseq_genomic: refseq
+  bioproject_umbrella: bioproject
+  biosample: biosample
+  sra_accession: insdc.sra
+  sra_project: insdc.sra
+  sra_run: insdc.sra
+  sra_sample: insdc.sra
+  insdc: ena.embl
+
+  # Dataset key spelled/underscored differently from the registry prefix.
+  affy_probeset: affy.probeset
+  chembl_compound: chembl.compound
+  chembl_target: chembl.target
+  efo_disease: efo
+  hgnc_symbol: hgnc.symbol
+  lncbook_gene: lncbook
+  mirbase_mature: mirbase.mature
+  oma_group: oma.grp
+  oma_protein: oma.protein
+  omim_gene: mim
+  omim_phenotype: mim
+  orphanet_gene: orphanet
+  orphanet_phenotype: orphanet.ordo
+  iuphar_ligand: iuphar.ligand
+  pdb_ccd: pdb-ccd
+  pubchem_compound: pubchem.compound
+  pubchem_substance: pubchem.substance
+  swisslipids: slm
+  tair: tair.gene
+  uniprot_isoform: uniprot.isoform
+  zfin_transcript: zfin
+
+  # One registry prefix covers several more specific pipeline dataset keys.
+  ensembl_protein: ensembl
+  ensembl_transcript: ensembl
+  flybase_gene: fb
+  flybase_protein: fb
+  flybase_transcript: fb
+  hp_inheritance: hp
+  hp_phenotype: hp
+  mgi_allele: mgi
+  mgi_genotype: mgi
+  ncit_disease: ncit
+  ncit_tissue: ncit
+  reactome_pathway: reactome
+  reactome_reaction: reactome
+
+  # Reuses another dataset key's already-resolved prefix under a different
+  # accession style.
+  uniprot_mnemonic: uniprot
+
+# These fields explain why a one-to-one name comparison would be misleading.
+mapping_types:
+  geo_series: split
+  geo_sample: split
+  refseq_rna: split
+  refseq_protein: split
+  refseq_genomic: split
+  bioproject_umbrella: alias
+  insdc: alias
+  ensembl_protein: split
+  ensembl_transcript: split
+  flybase_gene: split
+  flybase_protein: split
+  flybase_transcript: split
+  hp_inheritance: split
+  hp_phenotype: split
+  mgi_allele: split
+  mgi_genotype: split
+  ncit_disease: split
+  ncit_tissue: split
+  reactome_pathway: split
+  reactome_reaction: split
+  uniprot_mnemonic: alias
+
+# Dataset keys reviewed and confirmed to have no corresponding Identifiers.org
+# namespace (checked against the bulk registry export, not merely unresolved
+# by omission). Kept separate from silence so a missing mapping always means
+# "not yet reviewed" rather than "doesn't exist".
+not_registered:
+  - gea
+  - glycomotif
+  - jga_dataset
+  - jga_study
+  - mbgd_gene
+  - mbgd_organism
+  - nbdc_human_db
+  - pathbank
+  - prosite_prorule
+  - pubchem_pathway
+  - uniprot_proteome

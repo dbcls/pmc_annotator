@@ -1,0 +1,119 @@
+dataset_key	pattern_layer	category	extraction_pattern	registry_prefix	mapping_type	mapping_source	registry_status	registry_name	registry_pattern	registry_deprecated	current_uri	review_note
+affy_probeset	safe	Probe	\b(?P<id>\d{3,}(?:_[a-z])?_at)\b	affy.probeset	direct	reviewed_override	found	Affymetrix Probeset	^\d{4,}((_[asx])?_at)?$	False	http://identifiers.org/affy.probeset/	
+assembly_insdc	safe	Genome	\b(?P<id>GCA_\d{9})(?:\.\d+)?\b	insdc.gca	direct	explicit_pattern_uri	found	Genome assembly database - INSDC accessions	^GCA_[0-9]{9}(\.[0-9]+)?$	False	http://identifiers.org/insdc.gca/	
+assembly_refseq	safe	Genome	\b(?P<id>GCF_\d{9})(?:\.\d+)?\b	insdc.gca	direct	explicit_pattern_uri	found	Genome assembly database - INSDC accessions	^GCA_[0-9]{9}(\.[0-9]+)?$	False	http://identifiers.org/insdc.gca/	
+bioproject	safe	Project	\b(?P<id>PRJ[DEN][A-Z]\d+)\b	bioproject	direct	explicit_pattern_uri	found	BioProject	^PRJ[DEN][A-Z]\d+$	False	http://identifiers.org/bioproject/	
+bioproject_umbrella	safe	Project	\b(?P<id>PRJ[DEN][A-Z]\d+)\b	bioproject	alias	reviewed_override	found	BioProject	^PRJ[DEN][A-Z]\d+$	False	http://identifiers.org/bioproject/	
+ccds	safe	Gene	\b(?P<id>CCDS\d+)(?:\.\d+)?\b	ccds	direct	registry_prefix_match	found	Consensus CDS	^CCDS\d+\.\d+$	False	http://identifiers.org/ccds/	
+cellosaurus	safe	CellLine	\bCVCL[:_](?P<id>[A-Z0-9]{4})\b	cellosaurus	direct	registry_prefix_match	found	Cellosaurus	^CVCL_[A-Z0-9]{4}(\.txt)?$	False	http://identifiers.org/cellosaurus/	
+chebi	safe	Compound	\b(?:CHEBI[:_])(?P<id>\d+)\b	chebi	direct	registry_prefix_match	found	ChEBI	^CHEBI:\d+$	False	http://identifiers.org/chebi/	
+chembl_compound	safe	Compound	\b(?P<id>CHEMBL\d+)\b	chembl.compound	direct	reviewed_override	found	ChEMBL compound	^CHEMBL\d+$	False	http://identifiers.org/chembl.compound/	
+chembl_target	safe	Protein	\b(?P<id>CHEMBL\d+)\b	chembl.target	direct	reviewed_override	found	ChEMBL target	^CHEMBL\d+$	False	http://identifiers.org/chembl.target/	
+cl	safe	Anatomy	\bCL[:_](?P<id>\d{7})\b	cl	direct	registry_prefix_match	found	Cell Type Ontology	^CL:\d{7}$	False	http://identifiers.org/cl/	
+clinvar	safe	Variant	\b(?:VCV0*)(?P<id>\d{1,9})\b	clinvar	direct	registry_prefix_match	found	ClinVar Variant	^\d+$	False	http://identifiers.org/clinvar/	
+clo	safe	CellLine	\bCLO[:_](?P<id>\d{7})\b	clo	direct	registry_prefix_match	found	Cell Line Ontology	^\d{7}$	False	http://identifiers.org/clo/	
+cog	safe	Ortholog	\b(?P<id>COG\d{4})\b	cog	direct	registry_prefix_match	found	COG	^COG[0-9]+$	False	http://identifiers.org/cog/	
+doid	safe	Phenotype	\bDO(?:ID)?[:_](?P<id>\d+)\b	doid	direct	registry_prefix_match	found	Human Disease Ontology	^DOID:\d+$	False	http://identifiers.org/doid/	
+drugbank	safe	Drug	\b(?P<id>DB\d{5})\b	drugbank	direct	registry_prefix_match	found	DrugBank	^DB\d{5}$	False	http://identifiers.org/drugbank/	
+ec	safe	Function	\b(?:EC:)(?P<id>\d+\.(?:(?:-\.-\.-)|\d+\.(?:(?:-\.-)|\d+\.(?:-|n?\d+))))\b	ec-code	direct	explicit_pattern_uri	found	Enzyme Nomenclature	^\d+\.-\.-\.-|\d+\.\d+\.-\.-|\d+\.\d+\.\d+\.-|\d+\.\d+\.\d+\.(n)?\d+$	False	http://identifiers.org/ec-code/	
+efo_disease	safe	Phenotype	\bEFO[:_](?P<id>\d{7})\b	efo	direct	reviewed_override	found	Experimental Factor Ontology	^\d{7}$	False	http://identifiers.org/efo/	
+ensembl_gene	safe	Gene	\b(?:(?:(?P<id1>ENS[A-Z]*G\d{11})(?:\.\d+)?)|(?:(?P<id3>MGP_[A-Za-z0-9]+_G\d{7})(?:\.\d+)?)|(?P<id4>LRG_\d+)|(?P<id5>WBGene\d{8})|(?P<id10>t[A-Z]\(?:[ACGUX]{3}\)[A-Z]\d?))\b	ensembl	direct	explicit_pattern_uri	found	Ensembl	^((ENS[FPTG]\d{11}(\.\d+)?)|(FB\w{2}\d{7})|(Y[A-Z]{2}\d{3}[a-zA-Z](\-[A-Z])?)|([A-Z_a-z0-9]+(\.)?(t)?(\d+)?([a-z])?))$	False	http://identifiers.org/ensembl/	
+ensembl_protein	safe	Protein	\b(?:(?:(?P<id1>ENS[A-Z]*P\d{11})(?:\.\d+)?)|(?:(?P<id3>MGP_[A-Za-z0-9]+_P\d{7})(?:\.\d+)?)|(?P<id4>LRG_\d+p\d+(?:-\d)?))\b	ensembl	split	reviewed_override	found	Ensembl	^((ENS[FPTG]\d{11}(\.\d+)?)|(FB\w{2}\d{7})|(Y[A-Z]{2}\d{3}[a-zA-Z](\-[A-Z])?)|([A-Z_a-z0-9]+(\.)?(t)?(\d+)?([a-z])?))$	False	http://identifiers.org/ensembl/	
+ensembl_transcript	safe	Transcript	\b(?:(?:(?P<id1>ENS[A-Z]*T\d{11})(?:\.\d+)?)|(?:(?P<id3>MGP_[A-Za-z0-9]+_T\d{7})(?:\.\d+)?)|(?P<id4>LRG_\d+t\d+(?:-\d)?)|(?P<id7>Q\d{4}_[a-z]{1,3}RNA)|(?P<id9>snR\d+-?[A-Za-z]?_sno?RNA)|(?P<id10>t[A-Z]\(?:[ACGUX]{3}\)[A-Z]\d?_tRNA))\b	ensembl	split	reviewed_override	found	Ensembl	^((ENS[FPTG]\d{11}(\.\d+)?)|(FB\w{2}\d{7})|(Y[A-Z]{2}\d{3}[a-zA-Z](\-[A-Z])?)|([A-Z_a-z0-9]+(\.)?(t)?(\d+)?([a-z])?))$	False	http://identifiers.org/ensembl/	
+flybase_gene	safe	Gene	\bFBgn\d{7}\b	fb	split	reviewed_override	found	FlyBase	^FB\w{2}\d{7}$	False	http://identifiers.org/fb/	
+flybase_protein	safe	Protein	\bFBpp\d{7}\b	fb	split	reviewed_override	found	FlyBase	^FB\w{2}\d{7}$	False	http://identifiers.org/fb/	
+flybase_transcript	safe	Transcript	\bFBtr\d{7}\b	fb	split	reviewed_override	found	FlyBase	^FB\w{2}\d{7}$	False	http://identifiers.org/fb/	
+gea	safe	Experiment	\b(?P<id>E-GEAD-\d+)\b		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+geo_sample	safe	Sample	\b(?P<id>GSM\d+)\b	geo	split	reviewed_override	found	GEO	^G(PL|SM|SE|DS)\d+$	False	http://identifiers.org/geo/	
+geo_series	safe	Project	\b(?P<id>GSE\d+)\b	geo	split	reviewed_override	found	GEO	^G(PL|SM|SE|DS)\d+$	False	http://identifiers.org/geo/	
+glycomotif	safe	Glycan	\b(?:GM\.)(?P<id>G[0-9]{5}[A-Z]{2})\b		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+glytoucan	safe	Glycan	\b(?P<id>G[0-9]{5}[A-Z]{2})\b	glytoucan	direct	explicit_pattern_uri	found	GlyTouCan	^G[0-9]{5}[A-Z]{2}$	False	http://identifiers.org/glytoucan/	
+go	safe	Function	\bGO[:_](?P<id>\d{7})\b	go	direct	registry_prefix_match	found	Gene Ontology	^GO:\d{7}$	False	http://identifiers.org/go/	
+hgnc	safe	Gene	\b(?:(?:HGNC|hgnc):)(?P<id>\d{1,5})\b	hgnc	direct	registry_prefix_match	found	HGNC	^((HGNC|hgnc):)?\d{1,5}$	False	http://identifiers.org/hgnc/	
+hmdb	safe	Compound	\b(?:hmdb:)(?P<id>HMDB\d+)\b	hmdb	direct	registry_prefix_match	found	HMDB	^HMDB\d+$	False	http://identifiers.org/hmdb/	
+hp_inheritance	safe	Classification	\bHP[:_](?P<id>\d{7})\b	hp	split	reviewed_override	found	Human Phenotype Ontology	^HP:\d{7}$	False	http://identifiers.org/hp/	
+hp_phenotype	safe	Phenotype	\bHP[:_](?P<id>\d{7})\b	hp	split	reviewed_override	found	Human Phenotype Ontology	^HP:\d{7}$	False	http://identifiers.org/hp/	
+inchi_key	safe	Compound	\b(?P<id>[A-Z]{14}\-[A-Z]{10}(?:\-[A-Z])?)\b	inchikey	direct	explicit_pattern_uri	found	InChIKey	^[A-Z]{14}\-[A-Z]{10}(\-[A-Z])?$	False	http://identifiers.org/inchikey/	
+insdc	safe	Gene	\b(?:insdc:)(?P<id>[A-Z]\d{5}|[A-Z]{2}\d{6}|[A-Z]{4}\d{8}|[A-J][A-Z]{2}\d{5}|[A-Z]{4,}\d{9})(?:\.\d+)?\b	ena.embl	alias	reviewed_override	found	ENA	^[A-Z]+[0-9]+(\.\d+)?$	False	http://identifiers.org/insdc/	
+insdc_master	safe	Project	\b(?:insdc:)(?P<id>[A-Z]{4,6}\d{8,10})(?:\.\d+)?\b	insdc	direct	explicit_pattern_uri	found	Nucleotide Sequence Database	^([A-Z]\d{5}|[A-Z]{2}\d{6}|[A-Z]{4,6}\d{8,10}|[A-J][A-Z]{2}\d{5})(\.\d+)?$	False	http://identifiers.org/insdc/	
+intact	safe	Interaction	\b(?P<id>EBI\-[0-9]+)\b	intact	direct	registry_prefix_match	found	IntAct	^EBI\-[0-9]+$	False	http://identifiers.org/intact/	
+interpro	safe	Domain	\b(?P<id>IPR\d{6})\b	interpro	direct	registry_prefix_match	found	InterPro	^IPR\d{6}$	False	http://identifiers.org/interpro/	
+jga_dataset	safe	Project	\b(?P<id>JGAD\d{6})\b		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+jga_study	safe	Project	\b(?P<id>JGAS\d{6})\b		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+lipidmaps	safe	Lipid	\b(?P<id>LM(?:FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}(?:[0-9a-zA-Z]{4,6})?)\b	lipidmaps	direct	registry_prefix_match	found	LIPID MAPS	^LM(FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}([0-9a-zA-Z]{4,6})?$	False	http://identifiers.org/lipidmaps/	
+lncbook_gene	safe	Gene	\b(?P<id>HSALNG[0-9]{7})\b	lncbook	direct	reviewed_override	found	LncBook	^HSALNG\d{7}$	False	http://identifiers.org/lncbook/	
+lrg	safe	Gene	\b(?P<id>LRG_\d+)\b	lrg	direct	registry_prefix_match	found	Locus Reference Genomic	^LRG_\d+$	False	http://identifiers.org/lrg/	
+meddra	safe	Phenotype	\b(?:(?:MedDRA|meddra):)(?P<id>\d+)\b	meddra	direct	registry_prefix_match	found	MedDRA	^\d+$	False	http://identifiers.org/meddra/	
+mgi_allele	safe	Variant	\b(?:MGI|mgi):(?P<id>\d{5,})\b	mgi	split	reviewed_override	found	Mouse Genome Database	^MGI:\d+$	False	http://identifiers.org/mgi/	
+mgi_gene	safe	Gene	\b(?:MGI|mgi):(?P<id>\d{5,})\b	mgi	direct	explicit_pattern_uri	found	Mouse Genome Database	^MGI:\d+$	False	http://identifiers.org/mgi/MGI:	
+mgi_genotype	safe	Genotype	\b(?:MGI|mgi):(?P<id>\d{5,})\b	mgi	split	reviewed_override	found	Mouse Genome Database	^MGI:\d+$	False	http://identifiers.org/mgi/	
+mirbase	safe	Transcript	\b(?P<id>MI\d{7})\b	mirbase	direct	registry_prefix_match	found	miRBase Sequence	^MI\d{7}$	False	http://identifiers.org/mirbase/	
+mirbase_mature	safe	Transcript	\b(?P<id>MIMAT\d{7})\b	mirbase.mature	direct	reviewed_override	found	miRBase mature sequence	^MIMAT\d{7}$	False	http://identifiers.org/mirbase.mature/	
+mondo	safe	Phenotype	\bMONDO[:_](?P<id>\d{7})\b	mondo	direct	registry_prefix_match	found	Mondo Disease Ontology	^\d{7}$	False	http://identifiers.org/mondo/	
+mp	safe	Phenotype	\bMP[:_](?P<id>\d{7})\b	mp	direct	registry_prefix_match	found	Mammalian Phenotype Ontology	^MP:\d{7}$	False	http://identifiers.org/mp/	
+nando	safe	Phenotype	\bNANDO[:_](?P<id>\d{7})\b	nando	direct	registry_prefix_match	found	Nanbyo Disease Ontology	^NANDO:[0-9]+$	False	http://identifiers.org/nando/	
+nbdc_human_db	safe	Project	\b(?P<id>hum\d{4})(?:[.\-]v\d+)?\b		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+ncit_disease	safe	Phenotype	\bNCIT?[:_](?P<id>C\d+)\b	ncit	split	reviewed_override	found	NCIt	^C\d+$	False	http://identifiers.org/ncit/	
+ncit_tissue	safe	Anatomy	\bNCIT?[:_](?P<id>C\d+)\b	ncit	split	reviewed_override	found	NCIt	^C\d+$	False	http://identifiers.org/ncit/	
+omim_gene	safe	Gene	\b(?:O?MIM:)(?P<id>\d{6})\b	mim	direct	reviewed_override	found	OMIM	^[*#+%^]?\d{6}$	False	http://identifiers.org/mim/	
+omim_phenotype	safe	Phenotype	\b(?:O?MIM:)(?P<id>\d{6})\b	mim	direct	reviewed_override	found	OMIM	^[*#+%^]?\d{6}$	False	http://identifiers.org/mim/	
+orphanet_gene	safe	Gene	\b(?:ORPHA|ORDO|Orphanet)[:_](?P<id>[A-Z0-9]+)\b	orphanet	direct	reviewed_override	found	Orphanet	^\d+$	False	http://identifiers.org/orphanet/	
+orphanet_phenotype	safe	Phenotype	\b(?:ORPHA|ORDO|Orphanet)[:_](?P<id>[A-Z0-9]+)\b	orphanet.ordo	direct	reviewed_override	found	Orphanet Rare Disease Ontology	^Orphanet(_|:)C?\d+$	False	http://identifiers.org/orphanet.ordo/	
+pfam	safe	Domain	\b(?P<id>PF\d{5})\b	pfam	direct	registry_prefix_match	found	Pfam	^PF\d{5}$	False	http://identifiers.org/pfam/	
+pmc	safe	Literature	\b(?:PMC)(?P<id>\d+)\b	pmc	direct	explicit_pattern_uri	found	PMC International	^PMC\d+$	False	http://identifiers.org/pmc/PMC	
+prosite	safe	Domain	\b(?P<id>PS\d{5})\b	prosite	direct	registry_prefix_match	found	PROSITE	^PS\d{5}$	False	http://identifiers.org/prosite/	
+prosite_prorule	safe	AnnotationRule	\b(?P<id>PRU\d{5})\b		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+pubchem_pathway	safe	Pathway	\b(?:PWID)(?P<id>\d+)\b		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+pubmed	safe	Literature	\b(?:pmid:|PMID:)(?P<id>\d+)\b	pubmed	direct	registry_prefix_match	found	PubMed	^\d+$	False	http://identifiers.org/pubmed/	
+reactome_pathway	safe	Pathway	\b(?P<id>R-[A-Z]{3}-\d+)(?:\.\d+)?\b	reactome	split	reviewed_override	found	Reactome	^(R-[A-Z]{3}-\d+(-\d+)?(\.\d+)?)|(REACT_\d+(\.\d+)?)$	False	http://identifiers.org/reactome/	
+reactome_reaction	safe	Reaction	\b(?P<id>R-[A-Z]{3}-\d+)(?:\.\d+)?\b	reactome	split	reviewed_override	found	Reactome	^(R-[A-Z]{3}-\d+(-\d+)?(\.\d+)?)|(REACT_\d+(\.\d+)?)$	False	http://identifiers.org/reactome/	
+refseq_genomic	safe	Gene	\b(?P<id>(?:AC_|N[CGTW]_)\d{6}(?:\d{3})?|NZ_[A-Z]+\d+)(?:\.\d{1,2})?\b	refseq	split	reviewed_override	found	RefSeq	^(((WP|AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\d+)|(NZ\_[A-Z]{2,4}\d+))(\.\d+)?$	False	http://identifiers.org/refseq/	
+refseq_protein	safe	Protein	\b(?P<id>[ANXYWZ]P_\d{6}(?:\d{3})?)(?:\.\d{1,2})?\b	refseq	split	reviewed_override	found	RefSeq	^(((WP|AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\d+)|(NZ\_[A-Z]{2,4}\d+))(\.\d+)?$	False	http://identifiers.org/refseq/	
+refseq_rna	safe	Transcript	\b(?P<id>(?:NM|NR|XM|XR)_\d{6}(?:\d{3})?)(?:\.\d{1,2})?\b	refseq	split	reviewed_override	found	RefSeq	^(((WP|AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\d+)|(NZ\_[A-Z]{2,4}\d+))(\.\d+)?$	False	http://identifiers.org/refseq/	
+rgd	safe	Gene	\b(?:(?:RGD|rgd):)(?P<id>\d{4,})\b	rgd	direct	explicit_pattern_uri	found	Rat Genome Database	^\d{4,}$	False	http://identifiers.org/rgd/	
+rnacentral	safe	Transcript	\b(?P<id>URS[0-9A-F]{10}\_\d+)\b	rnacentral	direct	registry_prefix_match	found	RNAcentral	^URS[0-9A-F]{10}(\_\d+)?$	False	http://identifiers.org/rnacentral/	
+sio	safe	Classification	\bSIO[:_](?P<id>\d{6})\b	sio	direct	registry_prefix_match	found	Semanticscience Integrated Ontology	^SIO_\d{6,6}$	False	http://identifiers.org/sio/	
+smart	safe	Domain	\b(?P<id>SM\d{5})\b	smart	direct	registry_prefix_match	found	SMART	^SM\d{5}$	False	http://identifiers.org/smart/	
+sra_analysis	safe	Analysis	\b(?P<id>[SED]RZ\d+)\b	insdc.sra	direct	explicit_pattern_uri	found	Sequence Read Archive	^[SED]R[APRSXZ]\d+$	False	http://identifiers.org/insdc.sra/	
+sra_experiment	safe	Experiment	\b(?P<id>[SED]RX\d+)\b	insdc.sra	direct	explicit_pattern_uri	found	Sequence Read Archive	^[SED]R[APRSXZ]\d+$	False	http://identifiers.org/insdc.sra/	
+swisslipids	safe	Lipid	\bSLM[:_](?P<id>\d+)\b	slm	direct	reviewed_override	found	SwissLipids	^SLM:\d+$	False	http://identifiers.org/slm/	
+tair	safe	Gene	\b(?P<id>AT.G\d{5})(?:\.\d+)?\b	tair.gene	direct	reviewed_override	found	TAIR Gene	^Gene:\d{7}$	False	http://identifiers.org/tair.gene/	
+togovar	safe	Variant	\b(?P<id>tgv\d+)\b	togovar	direct	registry_prefix_match	found	TogoVar	^tgv[0-9]+$	False	http://identifiers.org/togovar/	
+uberon	safe	Anatomy	\bUBERON[:_](?P<id>\d{7})\b	uberon	direct	registry_prefix_match	found	UBERON	^UBERON:\d+$	False	http://identifiers.org/uberon/	
+uniparc	safe	Protein	\b(?P<id>UPI[A-F0-9]{10})\b	uniparc	direct	registry_prefix_match	found	UniParc	^UPI[A-F0-9]{10}$	False	http://identifiers.org/uniparc/	
+uniprot_isoform	safe	Protein	\b(?:(?P<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+))|(?P<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)))\b	uniprot.isoform	direct	reviewed_override	found	UniProt Isoform	^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\-\d+)$	False	http://identifiers.org/uniprot.isoform/	
+vgnc	safe	Gene	\b(?:(?:VGNC|vgnc):)(?P<id>\d{1,9})\b	vgnc	direct	registry_prefix_match	found	VGNC	^((VGNC|vgnc):)?\d{1,9}$	False	http://identifiers.org/vgnc/	
+wormbase_gene	safe	Gene	\b(?P<id>WBGene\d{8})\b	wb	direct	explicit_pattern_uri	found	WormBase	^WB[A-Z][a-z]+\d+$	False	http://identifiers.org/wb/	
+xenbase_gene	safe	Gene	\b(?P<id>XB\-[A-Z]+\-\d+)\b	xenbase	direct	explicit_pattern_uri	found	Xenbase	^XB\-\w+\-\d+$	False	http://identifiers.org/xenbase/	
+zfin_gene	safe	Gene	\b(?P<id>ZDB\-[A-Z]+\-\d{6}\-\d+)\b	zfin	direct	explicit_pattern_uri	found	ZFIN Bioentity	^ZDB\-\w+\-\d+\-\d+$	False	http://identifiers.org/zfin/	
+zfin_transcript	safe	Transcript	\b(?P<id>ZDB\-[A-Z]+\-\d{6}\-\d+)\b	zfin	direct	reviewed_override	found	ZFIN Bioentity	^ZDB\-\w+\-\d+\-\d+$	False	http://identifiers.org/zfin/	
+atc	excluded	Drug	^(?<id>[A-Z]\d{2}[A-Z]{2}\d{2})$	atc	direct	registry_prefix_match	found	Anatomical Therapeutic Chemical	^[A-Z](\d+([A-Z]{1,2}(\d+)?)?)?$	False	http://identifiers.org/atc/	
+biosample	excluded	Sample	^(?<id>SAM[NED]\w?\d+)$	biosample	direct	reviewed_override	found	BioSample	^SAM[NED](\w)?\d+$	False	http://identifiers.org/biosample/	
+dbsnp	excluded	Variant	^(?<id>rs\d+)$	dbsnp	direct	explicit_pattern_uri	found	dbSNP	^rs\d+$	False	http://identifiers.org/dbsnp/	
+hgnc_symbol	excluded	Gene	^(?<id>[A-Z0-9_(?:orf)\-]+\@?)$	hgnc.symbol	direct	reviewed_override	found	HGNC Symbol	^[A-Za-z-0-9_]+(\@)?$	False	http://identifiers.org/hgnc.symbol/	
+homologene	excluded	Ortholog	^(?<id>\d+)$	homologene	direct	registry_prefix_match	found	HomoloGene	^\d+$	False	http://identifiers.org/homologene/	
+iuphar_ligand	excluded	Compound	^(?<id>\d+)$	iuphar.ligand	direct	reviewed_override	found	IUPHAR ligand	^\d+$	False	http://identifiers.org/iuphar.ligand/	
+mbgd_gene	excluded	Gene	^(?<id>[a-z0-9]+:[A-Z0-9_\.-]+)$		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+mbgd_organism	excluded	Organism	^(?<id>[a-z0-9]+)$		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+medgen	excluded	Phenotype	^(?<id>CN?\d{4,7})$	medgen	direct	registry_prefix_match	found	MedGen	^[CN]*\d{4,7}$	False	http://identifiers.org/medgen/	
+mesh	excluded	Phenotype	^(?<id>[CD]\d{6,9})$	mesh	direct	registry_prefix_match	found	MeSH	^(C|D|M)\d{6,9}$	False	http://identifiers.org/mesh/	
+ncbigene	excluded	Gene	^(?<id>\d+)$	ncbigene	direct	registry_prefix_match	found	NCBI Gene	^\d+$	False	http://identifiers.org/ncbigene/	
+oma_group	excluded	Ortholog	^(?<id>[A-Z]+)$	oma.grp	direct	reviewed_override	found	OMA Group	^[A-Z]+$	False	http://identifiers.org/oma.grp/	
+oma_protein	excluded	Protein	^(?<id>[A-Z]{3}[A-Z0-9]{2}[0-9]{5,6})$	oma.protein	direct	reviewed_override	found	OMA Protein	^[A-Z0-9]{5}\d+$	False	http://identifiers.org/oma.protein/	
+pathbank	excluded	Pathway	^(?<id>SMP\d+)$		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+pdb	excluded	Structure	^(?<id>[0-9][A-Za-z0-9]{3})$	pdb	direct	explicit_pattern_uri	found	Protein Data Bank	^[0-9][A-Za-z0-9]{3}$	False	http://identifiers.org/pdb/	
+pdb_ccd	excluded	Compound	^(?<id>(?:\w{5}|\w{1,3}))$	pdb-ccd	direct	reviewed_override	found	Chemical Component Dictionary	^(\w{5}|\w{1,3})$	False	http://identifiers.org/pdb-ccd/	
+pubchem_compound	excluded	Compound	^(?:CID)?(?<id>\d+)$	pubchem.compound	direct	reviewed_override	found	PubChem-compound	^\d+$	False	http://identifiers.org/pubchem.compound/	
+pubchem_substance	excluded	Compound	^(?:SID)?(?<id>\d+)$	pubchem.substance	direct	reviewed_override	found	PubChem-substance	^\d+$	False	http://identifiers.org/pubchem.substance/	
+rfam	excluded	Transcript	^(?<id>RF\d{5})?$	rfam	direct	registry_prefix_match	found	RFAM	^RF\d{5}$	False	http://identifiers.org/rfam/	
+rhea	excluded	Reaction	^(?<id>\d{5})$	rhea	direct	registry_prefix_match	found	Rhea	^\d{5}$	False	http://identifiers.org/rhea/	
+sgd	excluded	Gene	^(?<id>S\d{9})$	sgd	direct	explicit_pattern_uri	found	SGD	^((S\d+$)|(Y[A-Z]{2}\d{3}[a-zA-Z](\-[A-Z])?))$	False	http://identifiers.org/sgd/	
+sra_accession	excluded	Submission	^(?<id>[SED]RA\d+)$	insdc.sra	direct	reviewed_override	found	Sequence Read Archive	^[SED]R[APRSXZ]\d+$	False	http://identifiers.org/insdc.sra/	
+sra_project	excluded	Project	^(?<id>[SED]RP\d+)$	insdc.sra	direct	reviewed_override	found	Sequence Read Archive	^[SED]R[APRSXZ]\d+$	False	http://identifiers.org/insdc.sra/	
+sra_run	excluded	SequenceRun	^(?<id>[SED]RR\d+)$	insdc.sra	direct	reviewed_override	found	Sequence Read Archive	^[SED]R[APRSXZ]\d+$	False	http://identifiers.org/insdc.sra/	
+sra_sample	excluded	Sample	^(?<id>[SED]RS\d+)$	insdc.sra	direct	reviewed_override	found	Sequence Read Archive	^[SED]R[APRSXZ]\d+$	False	http://identifiers.org/insdc.sra/	
+taxonomy	excluded	Organism	^(?<id>\d+)$	taxonomy	direct	explicit_pattern_uri	found	Taxonomy	^\d+$	False	http://identifiers.org/taxonomy/	
+uniprot	excluded	Protein	^(?:(?<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+)?)|(?<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)?)(?:\.\d+)?)$	uniprot	direct	registry_prefix_match	found	UniProt Knowledgebase	^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\.\d+)?(-\d+)?(#PRO_\d+)?$	False	http://identifiers.org/uniprot/	
+uniprot_mnemonic	excluded	Protein	^(?<id>[A-Z0-9]+_[A-Z0-9]{0,5})$	uniprot	alias	reviewed_override	found	UniProt Knowledgebase	^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\.\d+)?(-\d+)?(#PRO_\d+)?$	False	http://identifiers.org/uniprot/	
+uniprot_proteome	excluded	Proteome	^(?<id>UP\d{0,9})$		not_registered	unresolved	not_checked					Reviewed: no corresponding Identifiers.org namespace
+wikipathways	excluded	Pathway	^(?<id>WP\d{1,5})(?:\_r\d+)?$	wikipathways	direct	registry_prefix_match	found	WikiPathways	^WP\d{1,5}(\_r\d+)?$	False	http://identifiers.org/wikipathways/	

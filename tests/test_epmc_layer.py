@@ -9,6 +9,7 @@ from pmc_annotator.epmc_annotations import (
     normalize, annotations, identifiers_namespace, dynamic_dataset, locate,
 )
 from pmc_annotator.togoid_annotator import TogoIDAnnotator
+from pmc_annotator.reconcile_namespaces import prefix_from_uri, registry_fields
 from pmc_annotator.compare_extractions import merge, compare
 
 
@@ -97,6 +98,13 @@ class EpmcLayerTest(unittest.TestCase):
             'prefix': 'ect accession numbers ', 'suffix': ' and PRJNA715749.'},
             'Data Availability')
         self.assertEqual(len(hits), 1)
+
+    def test_namespace_reconciliation_uri_and_registry_record(self):
+        self.assertEqual(prefix_from_uri('https://identifiers.org/ebi/bioproject:PRJNA1'),
+                         'bioproject')
+        self.assertEqual(registry_fields({'name': 'Gene Expression Omnibus',
+                                          'pattern': 'GSE\\d+', 'deprecated': False}),
+                         ('found', 'Gene Expression Omnibus', 'GSE\\d+', False))
 
 
 if __name__ == '__main__':
