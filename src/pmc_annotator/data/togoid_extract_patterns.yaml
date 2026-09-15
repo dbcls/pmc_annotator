@@ -299,7 +299,7 @@ safe:
   insdc:
     category: Gene
     orig_regex: ^(?:insdc:)?(?<id>[A-Z]\d{5}|[A-Z]{2}\d{6}|[A-Z]{4}\d{8}|[A-J][A-Z]{2}\d{5}|[A-Z]{4,}\d{9})(?:\.\d+)?$
-    pattern: \b(?:insdc:)(?P<id>[A-Z]\d{5}|[A-Z]{2}\d{6}|[A-Z]{4}\d{8}|[A-J][A-Z]{2}\d{5}|[A-Z]{4,}\d{9})(?:\.\d+)?\b
+    pattern: \b(?:insdc:)?(?P<id>[A-Z]\d{5}|[A-Z]{2}\d{6}|[A-Z]{4}\d{8}|[A-J][A-Z]{2}\d{5}|[A-Z]{4,}\d{9})(?:\.\d+)?\b
     uri: http://identifiers.org/insdc/
   insdc_master:
     category: Project
