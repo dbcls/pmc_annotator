@@ -88,7 +88,9 @@ databaseChart.legend = { position: "top", textStyle: { typeface: "Arial" } };
 databaseChart.titleTextStyle.typeface = "Arial";
 databaseChart.setPosition("I4", "Q27");
 
-const columns = ["doc_id", "db", "surface", "membership"];
+const columns = Object.keys(comparison[0] ?? {
+  doc_id: "", db: "", surface: "", membership: ""
+});
 addTableSheet(workbook, "Both", comparison.filter(row => row.membership === "both"), columns);
 addTableSheet(workbook, "Europe PMC", comparison.filter(row => row.membership !== "togoid_only"), columns);
 addTableSheet(workbook, "TogoID", comparison.filter(row => row.membership !== "europepmc_only"), columns);
