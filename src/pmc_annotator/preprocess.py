@@ -158,9 +158,12 @@ class JATSParser:
                     ))
                     cursor += len(sec_text) + 1
 
-            # 4. Figure captions
+            # 4. Figure captions. Searched from the document root, not body:
+            # JATS commonly places "float" figures/tables in <back> (or a
+            # floats-group) rather than inline, so a body-only search silently
+            # drops captions (and any accessions cited in them).
             if self.include_captions:
-                for fig in body.findall(".//fig"):
+                for fig in root.findall(".//fig"):
                     cap = fig.find(".//caption")
                     if cap is not None:
                         cap_text = _text_content(cap)
@@ -174,7 +177,7 @@ class JATSParser:
                             ))
                             cursor += len(cap_text) + 1
 
-                for tbl in body.findall(".//table-wrap"):
+                for tbl in root.findall(".//table-wrap"):
                     cap = tbl.find(".//caption")
                     if cap is not None:
                         cap_text = _text_content(cap)
@@ -188,10 +191,26 @@ class JATSParser:
                             ))
                             cursor += len(cap_text) + 1
 
+                for supp in root.findall(".//supplementary-material"):
+                    cap = supp.find(".//caption")
+                    if cap is not None:
+                        cap_text = _text_content(cap)
+                        if cap_text:
+                            doc.passages.append(Passage(
+                                offset=cursor, text=cap_text,
+                                infon={
+                                    "section_type": "supplementary_caption",
+                                    "supp_id": supp.get("id", "") or "",
+                                }
+                            ))
+                            cursor += len(cap_text) + 1
+
             # 5. Table cell text (off by default: adjacent cells could otherwise
-            # fuse into one token, so this is a separate opt-in from captions)
+            # fuse into one token, so this is a separate opt-in from captions).
+            # Searched from the document root, not body: JATS commonly places
+            # "float" tables in <back> (or a floats-group) rather than inline.
             if self.include_tables_text:
-                for tbl in body.findall(".//table-wrap"):
+                for tbl in root.findall(".//table-wrap"):
                     tbl_text = self._extract_table_text(tbl)
                     if tbl_text:
                         doc.passages.append(Passage(
@@ -210,13 +229,20 @@ class JATSParser:
         """Flatten a table-wrap's rows into text: cells tab-separated, rows
         newline-separated, so adjacent cell values never fuse into one token
         (a naive full-subtree join would turn "X52917" next to "1" into
-        "X529171")."""
+        "X529171"). table-wrap-foot (footnotes, often abbreviation/accession
+        definitions) is a sibling of <table>, not a row, so it is appended
+        separately rather than picked up by the .//tr walk."""
         rows = []
         for tr in tbl_elem.findall(".//tr"):
             cells = [_text_content(cell) for cell in tr if cell.tag in ("td", "th")]
             cells = [c for c in cells if c]
             if cells:
                 rows.append("\t".join(cells))
+        foot = tbl_elem.find(".//table-wrap-foot")
+        if foot is not None:
+            foot_text = _text_content(foot)
+            if foot_text:
+                rows.append(foot_text)
         return "\n".join(rows)
 
     @staticmethod
