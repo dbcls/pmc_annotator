@@ -256,11 +256,20 @@ def normalize(args):
             if ann.get('type') != 'Accession Numbers':
                 continue  # never convert entity-linked gene names to accession citations
             target = ann.get('target', {})
-            selector = target.get('selector', {})
-            exact = selector.get('exact', '')
-            uri = ann.get('body', '')
-            if isinstance(uri, dict):
-                uri = uri.get('id', '')
+            body = ann.get('body', '')
+            if isinstance(target, str) and isinstance(body, dict):
+                # Europe PMC swaps body/target on some records (observed on DOI
+                # annotations): body carries the TextualBody with the surface
+                # text inline, target is the bare identifiers.org URI. There is
+                # no selector (prefix/suffix) or section in this shape.
+                uri, exact, selector, is_part_of = target, body.get('value', ''), {}, None
+            else:
+                selector = target.get('selector', {}) if isinstance(target, dict) else {}
+                exact = selector.get('exact', '')
+                uri = body
+                if isinstance(uri, dict):
+                    uri = uri.get('id', '')
+                is_part_of = target.get('isPartOf') if isinstance(target, dict) else None
             if not isinstance(uri, str) or not isinstance(exact, str) or not exact:
                 rejected.append(dict(doc_id=doc_id, reason='missing_text_or_uri', annotation=ann))
                 continue
@@ -270,7 +279,7 @@ def normalize(args):
             if consistent is False:
                 conflicts.append(dict(doc_id=doc_id, epmc_label=label,
                     idorg_namespace=namespace, annotation=ann))
-            hits = locate(doc, exact, selector, target.get('isPartOf'))
+            hits = locate(doc, exact, selector, is_part_of)
             is_external = namespace in set(config.get('non_accession_namespaces', []))
             reason = ('unmapped_or_ambiguous_namespace' if not db and not is_external else
                       'missing_or_ambiguous_local_span' if not is_external and len(hits) != 1 else '')

@@ -99,6 +99,34 @@ class EpmcLayerTest(unittest.TestCase):
             'Data Availability')
         self.assertEqual(len(hits), 1)
 
+    def test_normalize_handles_swapped_body_target_shape(self):
+        # Europe PMC sometimes swaps body/target: body carries the TextualBody
+        # {value: ...} inline and target is the bare identifiers.org URI,
+        # instead of the usual body=uri-string / target={selector:{exact:...}}.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            xml = root / 'PMC6020069.xml'
+            xml.write_text('<article><front><article-meta><article-id pub-id-type="pmc">6020069</article-id>'
+                            '</article-meta></front><body><sec><p>See 10.12688/f1000research.6037.2 for details.'
+                            '</p></sec></body></article>')
+            plan = root / 'plan.json'
+            plan.write_text(json.dumps({'shards': [{'shard_id': '00000', 'files': [str(xml)]}]}))
+            raw = root / 'raw'
+            raw.mkdir()
+            ann = {'type': 'Accession Numbers', 'memberOf': 'DOI',
+                   'body': {'source': 'x', 'type': 'TextualBody',
+                            'value': '10.12688/f1000research.6037.2', 'count': 1},
+                   'target': 'http://identifiers.org/doi:10.12688/f1000research.6037.2'}
+            (raw / 'response.json').write_text(json.dumps({'doc_id': 'PMC6020069',
+                'requested_article_ids': ['PMC:6020069'], 'response': [ann]}))
+            mapping = Path(__file__).parents[1] / 'src/pmc_annotator/data/epmc_mapping.yaml'
+            normalize(SimpleNamespace(plan=plan, raw=raw, mapping=mapping, output=root / 'epmc'))
+            self.assertEqual(json.loads((root / 'epmc/rejected.json').read_text()), [])
+            external = pd.read_parquet(root / 'epmc/external_identifiers.parquet')
+            self.assertEqual(len(external), 1)
+            self.assertEqual(external.iloc[0].db, 'doi')
+            self.assertEqual(external.iloc[0].surface, '10.12688/f1000research.6037.2')
+
     def test_namespace_reconciliation_uri_and_registry_record(self):
         self.assertEqual(prefix_from_uri('https://identifiers.org/ebi/bioproject:PRJNA1'),
                          'bioproject')
