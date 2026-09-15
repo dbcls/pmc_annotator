@@ -25,9 +25,9 @@ COLUMNS = ['doc_id', 'pmid', 'shard_id', 'passage_idx', 'passage_type',
            'label_namespace_consistent']
 
 
-def documents(plan_path):
+def documents(plan_path, include_tables_text=False):
     plan = json.loads(Path(plan_path).read_text())
-    parser = JATSParser()
+    parser = JATSParser(include_tables_text=include_tables_text)
     for shard in plan['shards']:
         for filename in shard['files']:
             doc = parser.parse(Path(filename))
@@ -238,7 +238,8 @@ def local_candidates(doc, exact, radius=80):
 
 
 def normalize(args):
-    docs = {doc.id: (sid, doc) for sid, doc in documents(args.plan)}
+    include_tables = getattr(args, 'include_tables_text', False)
+    docs = {doc.id: (sid, doc) for sid, doc in documents(args.plan, include_tables_text=include_tables)}
     config, rules = mapping_rules(args.mapping)
     annotator = TogoIDAnnotator(getattr(
         args, 'patterns', Path(__file__).parent / 'data/togoid_extract_patterns.yaml'))
@@ -349,6 +350,10 @@ def main():
     p.add_argument('--patterns', default=str(Path(__file__).parent / 'data/togoid_extract_patterns.yaml'),
                    help='TogoID extraction catalogue used to derive dataset keys')
     p.add_argument('--output', required=True)
+    p.add_argument('--include-tables-text', action='store_true',
+                   help='Parse table-cell text too, so accessions Europe PMC finds only in '
+                        'tables can still be locally aligned (off by default, matching the '
+                        'main extraction pipeline\'s passage scope)')
     p.set_defaults(func=normalize)
     args = ap.parse_args()
     args.func(args)

@@ -188,7 +188,36 @@ class JATSParser:
                             ))
                             cursor += len(cap_text) + 1
 
+            # 5. Table cell text (off by default: adjacent cells could otherwise
+            # fuse into one token, so this is a separate opt-in from captions)
+            if self.include_tables_text:
+                for tbl in body.findall(".//table-wrap"):
+                    tbl_text = self._extract_table_text(tbl)
+                    if tbl_text:
+                        doc.passages.append(Passage(
+                            offset=cursor, text=tbl_text,
+                            infon={
+                                "section_type": "table",
+                                "table_id": tbl.get("id", "") or "",
+                            }
+                        ))
+                        cursor += len(tbl_text) + 1
+
         return doc
+
+    @staticmethod
+    def _extract_table_text(tbl_elem):
+        """Flatten a table-wrap's rows into text: cells tab-separated, rows
+        newline-separated, so adjacent cell values never fuse into one token
+        (a naive full-subtree join would turn "X52917" next to "1" into
+        "X529171")."""
+        rows = []
+        for tr in tbl_elem.findall(".//tr"):
+            cells = [_text_content(cell) for cell in tr if cell.tag in ("td", "th")]
+            cells = [c for c in cells if c]
+            if cells:
+                rows.append("\t".join(cells))
+        return "\n".join(rows)
 
     @staticmethod
     def _get_article_id(root, pub_id_type: str) -> Optional[str]:
