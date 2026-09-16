@@ -42,17 +42,37 @@ SEC_TYPE_MAP = {
 
 
 def _text_content(elem) -> str:
-    """要素配下のテキストを itertext で結合 (タグは除去、空白を正規化)"""
+    """要素配下のテキストを結合 (タグは除去、空白を正規化)。
+
+    itertext() は素通しで使わない: <break/> (JATS の明示的改行、例えば
+    表セル内で複数IDを並べる "<td>NM_170079<break/>NM_206490</td>") は
+    それ自体テキストを持たないため itertext() では単に消え、隣接する
+    トークンが "NM_170079NM_206490" のように融合してしまう
+    (結果として単語境界 \\b が壊れ、正規表現が正しく不一致になる)。
+    <break/> だけは区切りとして明示的にスペースへ変換する。
+    """
     if elem is None:
         return ""
-    # コメント・処理命令ノードは itertext() が使えないのでスキップ.
-    # lxml では通常要素の .tag は str、コメント/PI は関数オブジェクトになる。
+    # コメント・処理命令ノードは .tag が str でない (lxml では関数オブジェクト)。
     if not isinstance(elem.tag, str):
         return ""
+
     parts = []
-    for t in elem.itertext():
-        if t:
-            parts.append(t)
+
+    def walk(node):
+        if node.text:
+            parts.append(node.text)
+        for child in node:
+            if not isinstance(child.tag, str):
+                continue  # comment / PI
+            if child.tag == "break":
+                parts.append(" ")
+            else:
+                walk(child)
+            if child.tail:
+                parts.append(child.tail)
+
+    walk(elem)
     text = "".join(parts)
     # 過剰な空白の畳み込み (改行はスペースに、複数空白を1つに)
     text = " ".join(text.split())
