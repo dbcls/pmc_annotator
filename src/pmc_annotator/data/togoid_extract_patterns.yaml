@@ -4,10 +4,6 @@ excluded:
     category: Drug
     orig_regex: ^(?<id>[A-Z]\d{2}[A-Z]{2}\d{2})$
     uri: http://identifiers.org/atc/
-  biosample:
-    category: Sample
-    orig_regex: ^(?<id>SAM[NED]\w?\d+)$
-    uri: http://identifiers.org/biosample/
   dbsnp:
     category: Variant
     orig_regex: ^(?<id>rs\d+)$
@@ -69,10 +65,6 @@ excluded:
     category: Compound
     orig_regex: ^(?:SID)?(?<id>\d+)$
     uri: http://identifiers.org/pubchem.substance/
-  rfam:
-    category: Transcript
-    orig_regex: ^(?<id>RF\d{5})?$
-    uri: http://identifiers.org/rfam/
   rhea:
     category: Reaction
     orig_regex: ^(?<id>\d{5})$
@@ -142,6 +134,11 @@ safe:
     orig_regex: ^(?<id>PRJ[DEN][A-Z]\d+)$
     pattern: \b(?P<id>PRJ[DEN][A-Z]\d+)\b
     uri: http://identifiers.org/bioproject/
+  biosample:
+    category: Sample
+    orig_regex: ^(?<id>SAM[NED]\w?\d+)$
+    pattern: \b(?P<id>SAM[NED]\w?\d+)\b
+    uri: http://identifiers.org/biosample/
   ccds:
     category: Gene
     orig_regex: ^(?<id>CCDS\d+)(?:\.\d+)?$
@@ -471,6 +468,11 @@ safe:
     orig_regex: ^(?<id>(?:NM|NR|XM|XR)_\d{6}(?:\d{3})?)(?:\.\d{1,2})?$
     pattern: \b(?P<id>(?:NM|NR|XM|XR)_\d{6}(?:\d{3})?)(?:\.\d{1,2})?\b
     uri: http://identifiers.org/refseq/
+  rfam:
+    category: Transcript
+    orig_regex: ^(?<id>RF\d{5})?$
+    pattern: \b(?P<id>RF\d{5})\b
+    uri: http://identifiers.org/rfam/
   rgd:
     category: Gene
     orig_regex: ^(?:(?:RGD|rgd):)?(?<id>\d{4,})$
