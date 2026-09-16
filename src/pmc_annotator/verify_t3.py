@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""T3: NCBI eutils による実在性検証 (最小版)。
-verify_t2 の verified.tsv の status=pending 行のうち、T3_ROUTE 登録dbを eutils で確定する。
+"""T3: NCBI eutils / ENA による実在性検証 (最小版)。
+verify_t2 の verified.tsv の status=pending 行のうち、T3_ROUTE 登録dbを確定する。
 T3は権威DBなので absent を主張できる。未登録dbは pending 据置。
 
 対象 (この版):
@@ -9,15 +9,20 @@ T3は権威DBなので absent を主張できる。未登録dbは pending 据置
   refseq_genomic -> efetch db=nuccore rettype=acc
   geo_series     -> esearch db=gds "GSE…[ACCN]" Count>0
   geo_sample     -> esearch db=gds "GSM…[ACCN]" Count>0
+  insdc / insdc_master -> ENA browser API (embl flatfile HEAD; 200/404 is real,
+      unlike identifiers.org's insdc redirect target, ENA's JS browser front-end,
+      which returns 200 regardless of whether the accession exists)
 未登録(affy_probeset/ensembl系/tair/… )は pending 据置。
 
   export NCBI_API_KEY=xxxx   # あれば 10 req/s
   python3 verify_t3.py route --in verified.tsv         # 対象db・件数の確認(API叩かない)
-  python3 verify_t3.py run   --in verified.tsv --out verified.t3.tsv [--inplace]
+  python3 verify_t3.py run   --in verified.tsv --out verified.t3.tsv [--inplace] [--workers 8]
 """
 import sys, os, re, time, json, sqlite3, argparse, urllib.request, urllib.parse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 EUTILS="https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
+ENA_API="https://www.ebi.ac.uk/ena/browser/api/embl/{id}"
 API_KEY=os.environ.get("NCBI_API_KEY")
 EMAIL=os.environ.get("NCBI_EMAIL")
 TOOL="pmc-t3-verify"
@@ -30,6 +35,8 @@ T3_ROUTE={
     "refseq_genomic": ("refseq","nuccore"),
     "geo_series":     ("geo","gds"),
     "geo_sample":     ("geo","gds"),
+    "insdc":          ("ena", None),
+    "insdc_master":   ("ena", None),
 }
 def strip_ver(a): return re.sub(r'\.\d+$','',a.strip())
 
@@ -103,6 +110,30 @@ def verify_geo(ids, cache, sleep):
         time.sleep(sleep)
     return {i:cache[i] for i in ids}
 
+# ---- ena: real per-record data API (HEAD), not the JS browser front-end ----
+def _ena_lookup(acc, sleep):
+    req=urllib.request.Request(ENA_API.format(id=urllib.parse.quote(acc)), method="HEAD",
+                               headers={"User-Agent":TOOL})
+    try:
+        with urllib.request.urlopen(req, timeout=30):
+            status="confirmed"
+    except urllib.error.HTTPError as e:
+        status="absent" if e.code==404 else "error"
+    except Exception:
+        status="error"
+    time.sleep(sleep)
+    return acc, status
+
+def verify_ena(ids, cache, sleep, workers):
+    todo=[i for i in ids if i not in cache]
+    if todo:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures=[pool.submit(_ena_lookup, i, sleep) for i in todo]
+            for fut in as_completed(futures):
+                acc, status = fut.result()
+                cache[acc] = status
+    return {i:cache[i] for i in ids}
+
 # ---- cache ----
 def open_cache():
     c=sqlite3.connect(CACHE)
@@ -132,8 +163,10 @@ def cmd_route(a):
     print(f"T3対象(登録db)= {tgt:,} 件\n")
     print("db別 (★=T3対象):")
     for db,n in pend.most_common():
+        route = f"{T3_ROUTE[db][0]}/{T3_ROUTE[db][1]}" if db in T3_ROUTE and T3_ROUTE[db][1] else \
+                (T3_ROUTE[db][0] if db in T3_ROUTE else None)
         print(f"  {'★' if db in T3_ROUTE else ' '} {db:18s} {n:>7,d}"
-              + (f"  -> {T3_ROUTE[db][0]}/{T3_ROUTE[db][1]}" if db in T3_ROUTE else "  (pending据置)"))
+              + (f"  -> {route}" if route else "  (pending据置)"))
 
 def cmd_run(a):
     header,rows=read_verified(a.__dict__["in"])
@@ -142,15 +175,20 @@ def cmd_run(a):
     for r in rows:
         if len(r)>2 and r[2]=="pending" and r[0] in T3_ROUTE:
             pend[r[0]].add(r[1])
-    c=open_cache(); result={}   # (db,id)->status
+    c=open_cache(); result={}; db_oracle={}   # (db,id)->status, db->oracle label
     for db,ids in pend.items():
         method,ncbi=T3_ROUTE[db]
         cache=cache_load(c, db)
         ids=sorted(ids)
         if method=="refseq":
             res=verify_refseq(ncbi, ids, cache, a.batch, a.sleep)
-        else:
+            db_oracle[db]="ncbi_eutils"
+        elif method=="geo":
             res=verify_geo(ids, cache, a.sleep)
+            db_oracle[db]="ncbi_eutils"
+        else:
+            res=verify_ena(ids, cache, a.sleep, a.workers)
+            db_oracle[db]="ena_api"
         cache_save(c, db, cache)
         for i,s in res.items(): result[(db,i)]=s
         nc=sum(1 for s in res.values() if s=="confirmed")
@@ -166,7 +204,7 @@ def cmd_run(a):
             if st=="pending" and (ds,i) in result:
                 s=result[(ds,i)]
                 if s in ("confirmed","absent"):
-                    st=s; orc="ncbi_eutils"; conf+=(s=="confirmed")
+                    st=s; orc=db_oracle.get(ds,"ncbi_eutils"); conf+=(s=="confirmed")
             w.write(f"{ds}\t{i}\t{st}\t{orc}\n")
     print(f"\nT3で確定(confirmed) 追加= {conf:,}  -> {out}")
 
@@ -179,6 +217,7 @@ def main():
             p.add_argument("--inplace",action="store_true")
             p.add_argument("--batch",type=int,default=200)
             p.add_argument("--sleep",type=float,default=(0.11 if API_KEY else 0.34))
+            p.add_argument("--workers",type=int,default=8,help="Concurrent threads for the ena route")
         p.set_defaults(func={"route":cmd_route,"run":cmd_run}[name])
     a=ap.parse_args(); a.func(a)
 

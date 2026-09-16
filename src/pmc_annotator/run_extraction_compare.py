@@ -1,16 +1,29 @@
 """One-command orchestrator: new PMC XML -> TogoID extraction vs EuropePMC comparison.
 
-Chains: phase1_ner plan -> {phase_regex_togoid run} || {epmc_annotations fetch ->
-epmc_annotations normalize} -> compare_extractions compare -> (optional)
-build_comparison_workbook.
+Chains:
+  phase1_ner plan
+    -> { phase_regex_togoid run
+           -> build_mentions -> verify_t2 -> verify_t3 -> verify_idorg
+           -> filter_verified_extraction   }
+    || { epmc_annotations fetch -> epmc_annotations normalize }
+    -> compare_extractions compare
+    -> (optional) build_comparison_workbook
 
-TogoID extraction and the Europe PMC fetch+normalize chain don't depend on each
-other -- they only both feed into compare -- so they run concurrently in two
-threads, each driving its own subprocess chain. Their output is logged to files
-under <workdir>/logs/ instead of interleaving on the console; the console just
-shows start/finish. Each step's output lives under --workdir in a fixed layout,
-so re-running is cheap (phase1_ner/phase_regex_togoid skip work already marked
-.done; epmc fetch skips cached articles).
+By default, compare runs against only the *existence-confirmed* half of our
+extraction (T2 -> T3 -> verify_idorg, then filtered), not the raw syntactic
+matches -- so the comparison measures agreement on data we've actually
+verified exists, not on unverified extraction noise. Pass --skip-verify to
+compare against the raw extraction instead (faster, but includes anything
+verification would have caught, e.g. accession-shaped false positives).
+
+TogoID extraction(+verification) and the Europe PMC fetch+normalize chain
+don't depend on each other -- they only both feed into compare -- so they
+run concurrently in two threads, each driving its own subprocess chain.
+Their output is logged to files under <workdir>/logs/ instead of
+interleaving on the console; the console just shows start/finish. Each
+step's output lives under --workdir in a fixed layout, so re-running is
+cheap (phase1_ner/phase_regex_togoid skip work already marked .done; epmc
+fetch skips cached articles; verify_t2/t3/idorg cache their lookups).
 
   python -m pmc_annotator.run_extraction_compare \\
       --input /path/to/new_pmc_xml --workdir ./workdir --xlsx
@@ -52,13 +65,44 @@ def run(cmd, label, log_path=None):
     print(f'[{label}] done ({dt:.0f}s)', flush=True)
 
 
-def extraction_branch(py, plan_path, regex_togoid_dir, patterns, workers, include_tables, log_path):
+def extraction_branch(py, wd, plan_path, regex_togoid_dir, patterns, workers, include_tables,
+                      verify, idorg_workers, idorg_sleep, log_path):
     cmd = [py, '-m', 'pmc_annotator.phase_regex_togoid', 'run',
            '--plan', str(plan_path), '--output', str(regex_togoid_dir),
            '--patterns', patterns, '--workers', str(workers)]
     if include_tables:
         cmd.append('--include-tables-text')
     run(cmd, 'TogoID extraction', log_path)
+
+    if not verify:
+        return regex_togoid_dir
+
+    mentions = wd / 'verify' / 'mentions.tsv'
+    t2_input = wd / 'verify' / 't2_input.tsv'
+    verified_t2 = wd / 'verify' / 'verified.tsv'
+    verified_t3 = wd / 'verify' / 'verified.t3.tsv'
+    verified_idorg = wd / 'verify' / 'verified.idorg.tsv'
+    verified_dir = wd / 'regex_togoid_verified'
+
+    run([py, '-m', 'pmc_annotator.build_mentions',
+         '--togoid', str(regex_togoid_dir),
+         '--mentions-out', str(mentions), '--t2-input-out', str(t2_input)],
+        'Verify: build mentions', log_path)
+    run([py, '-m', 'pmc_annotator.verify_t2', 'verify',
+         '--in', str(t2_input), '--out', str(verified_t2)],
+        'Verify: T2 (SPARQL/RDF Portal)', log_path)
+    run([py, '-m', 'pmc_annotator.verify_t3', 'run',
+         '--in', str(verified_t2), '--out', str(verified_t3)],
+        'Verify: T3 (NCBI E-utilities)', log_path)
+    run([py, '-m', 'pmc_annotator.verify_idorg', 'run',
+         '--in', str(verified_t3), '--out', str(verified_idorg),
+         '--workers', str(idorg_workers), '--sleep', str(idorg_sleep)],
+        'Verify: identifiers.org resolution', log_path)
+    run([py, '-m', 'pmc_annotator.filter_verified_extraction',
+         '--togoid', str(regex_togoid_dir), '--verified', str(verified_idorg),
+         '--output', str(verified_dir)],
+        'Verify: filter to confirmed', log_path)
+    return verified_dir
 
 
 def epmc_branch(py, plan_path, epmc_raw, epmc_normalized, mapping, patterns,
@@ -101,6 +145,11 @@ def main():
                     help='Reuse an existing raw.jsonl cache instead of re-fetching from Europe PMC')
     ap.add_argument('--no-parallel', action='store_true',
                     help='Run extraction and the Europe PMC chain sequentially instead of concurrently')
+    ap.add_argument('--skip-verify', action='store_true',
+                    help='Compare against raw extraction instead of running T2 -> T3 -> '
+                         'verify_idorg and comparing only existence-confirmed accessions')
+    ap.add_argument('--verify-idorg-workers', type=int, default=8)
+    ap.add_argument('--verify-idorg-sleep', type=float, default=0.2)
     ap.add_argument('--xlsx', action='store_true', help='Also build a formatted .xlsx workbook')
     args = ap.parse_args()
 
@@ -114,6 +163,7 @@ def main():
     epmc_normalized = wd / 'epmc' / 'normalized'
     comparison_dir = wd / 'comparison'
     include_tables = not args.no_tables
+    verify = not args.skip_verify
     t_all = time.time()
 
     run([PY, '-m', 'pmc_annotator.phase1_ner', 'plan',
@@ -122,32 +172,38 @@ def main():
         'Plan: build shard_plan.json')
 
     if args.no_parallel:
-        extraction_branch(PY, plan_path, regex_togoid_dir, args.patterns,
-                          args.extract_workers, include_tables, None)
+        togoid_compare_dir = extraction_branch(
+            PY, wd, plan_path, regex_togoid_dir, args.patterns, args.extract_workers,
+            include_tables, verify, args.verify_idorg_workers, args.verify_idorg_sleep, None)
         epmc_branch(PY, plan_path, epmc_raw, epmc_normalized, args.mapping, args.patterns,
                    args.epmc_workers, include_tables, args.include_med, args.skip_epmc_fetch, None)
     else:
-        print(f'\nRunning extraction and Europe PMC concurrently; '
-              f'output logged to {log_dir}/*.log\n', flush=True)
+        print(f'\nRunning extraction{" + verification" if verify else ""} and Europe PMC '
+              f'concurrently; output logged to {log_dir}/*.log\n', flush=True)
         with ThreadPoolExecutor(max_workers=2) as pool:
-            futures = [
-                pool.submit(extraction_branch, PY, plan_path, regex_togoid_dir, args.patterns,
-                           args.extract_workers, include_tables, log_dir / 'extraction.log'),
-                pool.submit(epmc_branch, PY, plan_path, epmc_raw, epmc_normalized,
-                           args.mapping, args.patterns, args.epmc_workers, include_tables,
-                           args.include_med, args.skip_epmc_fetch, log_dir / 'epmc.log'),
-            ]
-            errors = []
-            for future in futures:
-                try:
-                    future.result()
-                except Exception as exc:
-                    errors.append(str(exc))
+            extraction_future = pool.submit(
+                extraction_branch, PY, wd, plan_path, regex_togoid_dir, args.patterns,
+                args.extract_workers, include_tables, verify,
+                args.verify_idorg_workers, args.verify_idorg_sleep, log_dir / 'extraction.log')
+            epmc_future = pool.submit(
+                epmc_branch, PY, plan_path, epmc_raw, epmc_normalized,
+                args.mapping, args.patterns, args.epmc_workers, include_tables,
+                args.include_med, args.skip_epmc_fetch, log_dir / 'epmc.log')
+
+            errors, togoid_compare_dir = [], regex_togoid_dir
+            try:
+                togoid_compare_dir = extraction_future.result()
+            except Exception as exc:
+                errors.append(str(exc))
+            try:
+                epmc_future.result()
+            except Exception as exc:
+                errors.append(str(exc))
             if errors:
                 raise SystemExit('\n'.join(errors))
 
     compare_cmd = [PY, '-m', 'pmc_annotator.compare_extractions', 'compare',
-                   '--togoid', str(regex_togoid_dir), '--epmc', str(epmc_normalized),
+                   '--togoid', str(togoid_compare_dir), '--epmc', str(epmc_normalized),
                    '--output', str(comparison_dir), '--plan', str(plan_path)]
     if args.reconciliation:
         compare_cmd += ['--reconciliation', args.reconciliation]
@@ -161,6 +217,7 @@ def main():
         run(xlsx_cmd, 'Build Excel workbook')
 
     print(f'\n=== DONE in {time.time() - t_all:.0f}s ===')
+    print(f'compared against: {"existence-confirmed (T2/T3/verify_idorg)" if verify else "raw extraction (--skip-verify)"}')
     print(f'comparison.tsv / by_database.tsv / summary.json -> {comparison_dir}/')
     if args.xlsx:
         print(f'workbook -> {wd / "comparison.xlsx"}')
