@@ -9,9 +9,10 @@ T3は権威DBなので absent を主張できる。未登録dbは pending 据置
   refseq_genomic -> efetch db=nuccore rettype=acc
   geo_series     -> esearch db=gds "GSE…[ACCN]" Count>0
   geo_sample     -> esearch db=gds "GSM…[ACCN]" Count>0
-  insdc / insdc_master -> ENA browser API (embl flatfile HEAD; 200/404 is real,
-      unlike identifiers.org's insdc redirect target, ENA's JS browser front-end,
-      which returns 200 regardless of whether the accession exists)
+  insdc / insdc_master -> EBI Search batch entry-fetch (embl domain, up to 100
+      ids/request; unlike identifiers.org's insdc redirect target, ENA's JS
+      browser front-end, which returns 200 regardless of whether the
+      accession exists, this returns exactly the ids that are real)
 未登録(affy_probeset/ensembl系/tair/… )は pending 据置。
 
   export NCBI_API_KEY=xxxx   # あれば 10 req/s
@@ -22,7 +23,8 @@ import sys, os, re, time, json, sqlite3, argparse, urllib.request, urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 EUTILS="https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-ENA_API="https://www.ebi.ac.uk/ena/browser/api/embl/{id}"
+EBISEARCH="https://www.ebi.ac.uk/ebisearch/ws/rest/embl/entry/{ids}?format=json&fields=id"
+EBISEARCH_BATCH=100  # server-enforced max ids per request
 API_KEY=os.environ.get("NCBI_API_KEY")
 EMAIL=os.environ.get("NCBI_EMAIL")
 TOOL="pmc-t3-verify"
@@ -110,28 +112,37 @@ def verify_geo(ids, cache, sleep):
         time.sleep(sleep)
     return {i:cache[i] for i in ids}
 
-# ---- ena: real per-record data API (HEAD), not the JS browser front-end ----
-def _ena_lookup(acc, sleep):
-    req=urllib.request.Request(ENA_API.format(id=urllib.parse.quote(acc)), method="HEAD",
-                               headers={"User-Agent":TOOL})
+# ---- ena: EBI Search batch entry-fetch (embl domain), not the JS browser front-end ----
+def _ebisearch_batch(ids, timeout=30):
+    """One batch request (<=100 ids) against EBI Search. Returns the set of
+    (version-stripped) ids from this batch that actually exist, or None on
+    a request-level failure (caller should not treat that as 'absent')."""
+    url=EBISEARCH.format(ids=",".join(urllib.parse.quote(i, safe="") for i in ids))
+    req=urllib.request.Request(url, headers={"User-Agent":TOOL})
     try:
-        with urllib.request.urlopen(req, timeout=30):
-            status="confirmed"
-    except urllib.error.HTTPError as e:
-        status="absent" if e.code==404 else "error"
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            data=json.loads(r.read().decode("utf-8","replace"))
+        return {e["id"] for e in data.get("entries",[])}
     except Exception:
-        status="error"
-    time.sleep(sleep)
-    return acc, status
+        return None
 
 def verify_ena(ids, cache, sleep, workers):
     todo=[i for i in ids if i not in cache]
-    if todo:
+    batches=[todo[k:k+EBISEARCH_BATCH] for k in range(0,len(todo),EBISEARCH_BATCH)]
+
+    def process(batch):
+        found=_ebisearch_batch(batch)
+        time.sleep(sleep)
+        return batch, found
+
+    if batches:
         with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures=[pool.submit(_ena_lookup, i, sleep) for i in todo]
+            futures=[pool.submit(process, b) for b in batches]
             for fut in as_completed(futures):
-                acc, status = fut.result()
-                cache[acc] = status
+                batch, found = fut.result()
+                for i in batch:
+                    cache[i] = "error" if found is None else \
+                        ("confirmed" if strip_ver(i) in found else "absent")
     return {i:cache[i] for i in ids}
 
 # ---- cache ----
