@@ -1,5 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TogoID vs Europe PMC Agreement</title>
 <style>
+/* html/body carry the surface color so there's no default-white flash
+   around .viz-root when the OS is in dark mode -- this page is a
+   standalone document (opened via file:// or a plain static server),
+   not wrapped by anything that would otherwise supply that. */
+html, body { margin: 0; padding: 0; min-height: 100%; background: #fcfcfb; }
+@media (prefers-color-scheme: dark) {
+  html, body { background: #171716; }
+}
 .viz-root {
   color-scheme: light;
   --surface-0: #fcfcfb;
@@ -86,6 +99,8 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
 .search-input:focus { outline: 2px solid var(--series-both); outline-offset: 1px; }
 .hint { font-size: 11.5px; color: var(--text-muted); }
 </style>
+</head>
+<body>
 
 <div class="viz-root">
 <div class="wrap">
@@ -95,9 +110,9 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
   <div class="kpi-row" id="kpiRow"></div>
 
   <div class="card">
-    <h2>Papers by %% found in common (agreement rate)</h2>
-    <p class="desc">Of papers where either extractor found at least one accession, how much of each paper's total ended up confirmed by <b>both</b>. Bucketed in 10-point steps.</p>
-    <svg id="histChart" width="100%" viewBox="0 0 1080 340" style="overflow: visible;"></svg>
+    <h2>Papers by % found in common (agreement rate)</h2>
+    <p class="desc">Of papers where either extractor found at least one accession, how much of each paper's total ended up confirmed by <b>both</b>. Bucketed in 10-point steps -- the right end (90-100%) is <b>high agreement</b>, the left end (0-10%) is <b>high disagreement</b>.</p>
+    <svg id="histChart" width="100%" viewBox="0 0 1080 380" style="overflow: visible;"></svg>
   </div>
 
   <div class="card">
@@ -190,7 +205,7 @@ function hideTip() { tooltip.style.display = 'none'; }
 // ---------- Histogram: papers by %-both bucket ----------
 (function renderHistogram() {
   const svg = document.getElementById('histChart');
-  const W = 1080, H = 340, padL = 46, padR = 16, padT = 16, padB = 40;
+  const W = 1080, H = 380, padL = 46, padR = 16, padT = 16, padB = 80;
   const plotW = W - padL - padR, plotH = H - padT - padB;
   const data = DATA.histogram;
   const maxN = Math.max(...data.map(d => d.n_documents), 1);
@@ -231,8 +246,16 @@ function hideTip() { tooltip.style.display = 'none'; }
     svg.appendChild(xt);
   });
 
+  const axisNoteY = padT + plotH + 34;
+  const loNote = el('text', { x: padL, y: axisNoteY, 'text-anchor': 'start', fill: 'var(--text-muted)' });
+  loNote.textContent = '<- high disagreement';
+  svg.appendChild(loNote);
+  const hiNote = el('text', { x: padL + plotW, y: axisNoteY, 'text-anchor': 'end', fill: 'var(--text-muted)' });
+  hiNote.textContent = 'high agreement ->';
+  svg.appendChild(hiNote);
+
   if (DATA.n_no_data > 0) {
-    const note = el('text', { x: padL, y: H - 4, 'text-anchor': 'start', fill: 'var(--text-muted)' });
+    const note = el('text', { x: padL, y: padT + plotH + 56, 'text-anchor': 'start', fill: 'var(--text-muted)' });
     note.textContent = `+ ${fmt(DATA.n_no_data)} papers with zero accessions on either side (not shown - no rate to bucket)`;
     svg.appendChild(note);
   }
@@ -380,3 +403,6 @@ function hideTip() { tooltip.style.display = 'none'; }
   render();
 })();
 </script>
+
+</body>
+</html>
