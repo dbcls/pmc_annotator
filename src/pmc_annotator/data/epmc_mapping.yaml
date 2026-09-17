@@ -37,9 +37,6 @@ rules:
   - db: refseq_genomic
     surface: '(?:AC_|N[CGTW]_|NZ_)[A-Z0-9]+(?:\.\d+)?'
     uri: '^https?://(?:www\.)?(?:ncbi\.nlm\.nih\.gov/(?:nuccore|protein)/|identifiers\.org/refseq[:/])'
-  - db: uniprot
-    surface: '(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})'
-    uri: '^https?://(?:www\.uniprot\.org/(?:uniprotkb|uniprot)/|purl\.uniprot\.org/uniprot/|identifiers\.org/uniprot[:/])'
   - db: pfam
     surface: 'PF\d{5}'
     uri: '^https?://(?:pfam\.xfam\.org/|www\.ebi\.ac\.uk/interpro/|identifiers\.org/pfam[:/])'

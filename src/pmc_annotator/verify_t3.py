@@ -9,10 +9,15 @@ T3は権威DBなので absent を主張できる。未登録dbは pending 据置
   refseq_genomic -> efetch db=nuccore rettype=acc
   geo_series     -> esearch db=gds "GSE…[ACCN]" Count>0
   geo_sample     -> esearch db=gds "GSM…[ACCN]" Count>0
-  insdc / insdc_master -> EBI Search batch entry-fetch (embl domain, up to 100
-      ids/request; unlike identifiers.org's insdc redirect target, ENA's JS
-      browser front-end, which returns 200 regardless of whether the
-      accession exists, this returns exactly the ids that are real)
+  insdc / insdc_master -> split by shape (verify_insdc): nucleotide-style ->
+      EBI Search batch entry-fetch (embl domain, up to 100 ids/request;
+      unlike identifiers.org's insdc redirect target, ENA's JS browser
+      front-end, which returns 200 regardless of whether the accession
+      exists, this returns exactly the ids that are real); protein-style
+      (3 letters + 5 digits, e.g. BAA04802 -- the standard INSDC protein_id
+      shape) -> efetch db=protein, since EBI Search's embl domain only
+      indexes nucleotide sequences and wrongly marks real protein
+      accessions absent otherwise
 未登録(affy_probeset/ensembl系/tair/… )は pending 据置。
 
   export NCBI_API_KEY=xxxx   # あれば 10 req/s
@@ -145,6 +150,31 @@ def verify_ena(ids, cache, sleep, workers):
                         ("confirmed" if strip_ver(i) in found else "absent")
     return {i:cache[i] for i in ids}
 
+# insdc's standard protein_id shape: 3 letters + 5 digits (e.g. BAA04802,
+# optionally .N versioned) -- EBI Search's "embl" domain only indexes
+# nucleotide sequences, so these are wrongly marked absent there even when
+# real (confirmed live: BAA04802/AAD39434/BAB60335/BAA34687 all resolve via
+# NCBI's protein db but returned nothing from EBI Search's embl domain).
+_PROTEIN_ACC_RE=re.compile(r'^[A-Za-z]{3}\d{5}(\.\d+)?$')
+
+def verify_insdc(ids, cache, sleep, workers, batch):
+    """insdc/insdc_master, split by shape: nucleotide-style -> EBI Search
+    (verify_ena); protein-style -> NCBI efetch db=protein (verify_refseq's
+    machinery, reused as-is). Returns (status_dict, oracle_dict) so the
+    caller can record which oracle actually resolved each id, not just a
+    single label for the whole db."""
+    protein_ids=[i for i in ids if _PROTEIN_ACC_RE.match(i)]
+    nuc_ids=[i for i in ids if not _PROTEIN_ACC_RE.match(i)]
+    oracle={}
+    result={}
+    if nuc_ids:
+        result.update(verify_ena(nuc_ids, cache, sleep, workers))
+        for i in nuc_ids: oracle[i]="ena_api"
+    if protein_ids:
+        result.update(verify_refseq("protein", protein_ids, cache, batch, sleep))
+        for i in protein_ids: oracle[i]="ncbi_eutils_protein"
+    return {i:result[i] for i in ids}, oracle
+
 # ---- cache ----
 def open_cache():
     c=sqlite3.connect(CACHE)
@@ -186,7 +216,7 @@ def cmd_run(a):
     for r in rows:
         if len(r)>2 and r[2]=="pending" and r[0] in T3_ROUTE:
             pend[r[0]].add(r[1])
-    c=open_cache(); result={}; db_oracle={}   # (db,id)->status, db->oracle label
+    c=open_cache(); result={}; db_oracle={}; id_oracle={}   # (db,id)->status, db->oracle label, (db,id)->oracle override
     for db,ids in pend.items():
         method,ncbi=T3_ROUTE[db]
         cache=cache_load(c, db)
@@ -198,8 +228,8 @@ def cmd_run(a):
             res=verify_geo(ids, cache, a.sleep)
             db_oracle[db]="ncbi_eutils"
         else:
-            res=verify_ena(ids, cache, a.sleep, a.workers)
-            db_oracle[db]="ena_api"
+            res,oracle=verify_insdc(ids, cache, a.sleep, a.workers, a.batch)
+            for i,o in oracle.items(): id_oracle[(db,i)]=o
         cache_save(c, db, cache)
         for i,s in res.items(): result[(db,i)]=s
         nc=sum(1 for s in res.values() if s=="confirmed")
@@ -215,7 +245,7 @@ def cmd_run(a):
             if st=="pending" and (ds,i) in result:
                 s=result[(ds,i)]
                 if s in ("confirmed","absent"):
-                    st=s; orc=db_oracle.get(ds,"ncbi_eutils"); conf+=(s=="confirmed")
+                    st=s; orc=id_oracle.get((ds,i), db_oracle.get(ds,"ncbi_eutils")); conf+=(s=="confirmed")
             w.write(f"{ds}\t{i}\t{st}\t{orc}\n")
     print(f"\nT3で確定(confirmed) 追加= {conf:,}  -> {out}")
 
