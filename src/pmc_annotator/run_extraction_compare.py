@@ -197,6 +197,12 @@ def main():
     ap.add_argument('--oa-file-list', default=None,
                     help='Optional PMC OA oa_file_list.csv; if given, build_metrics also gets a '
                          'doc_year.tsv (via make_doc_year.py) for usage_by_year.tsv')
+    ap.add_argument('--dashboard', action='store_true',
+                    help='Also build a self-contained dashboard.html (per-document agreement '
+                         'histogram, top-databases chart, divergence scatter, searchable table) '
+                         'from the compare output -- open it directly or serve it as a static file')
+    ap.add_argument('--dashboard-label', default=None,
+                    help='Label shown in the dashboard subtitle (default: --workdir\'s folder name)')
     args = ap.parse_args()
     if args.build_matrix and args.skip_verify:
         raise SystemExit('--build-matrix requires verification (reads verified.idorg.tsv\'s '
@@ -285,12 +291,22 @@ def main():
                     '--output', str(wd / 'comparison.xlsx')]
         run(xlsx_cmd, 'Build Excel workbook')
 
+    if args.dashboard:
+        dashboard_cmd = [PY, '-m', 'pmc_annotator.build_comparison_dashboard',
+                         '--comparison-dir', str(comparison_dir),
+                         '--output', str(wd / 'dashboard.html'),
+                         '--run-label', args.dashboard_label or wd.name]
+        run(dashboard_cmd, 'Build comparison dashboard')
+
     print(f'\n=== DONE in {time.time() - t_all:.0f}s ===')
     print(f'compared against: {"existence-confirmed (T2/T3/verify_idorg)" if verify else "raw extraction (--skip-verify)"}')
     print(f'comparison.tsv / by_database.tsv / by_document.tsv / '
           f'document_agreement_histogram.tsv / summary.json -> {comparison_dir}/')
     if args.xlsx:
         print(f'workbook -> {wd / "comparison.xlsx"}')
+    if args.dashboard:
+        print(f'dashboard -> {wd / "dashboard.html"} (open directly, or serve: '
+              f'python3 -m http.server 8000 --directory {wd})')
     if matrix_dir is not None:
         print(f'usage matrix (usage_by_entry/db/doc/long.tsv) -> {matrix_dir}/')
         print(f'  next (LLM role stage, run by hand): build_windows.py --usage '

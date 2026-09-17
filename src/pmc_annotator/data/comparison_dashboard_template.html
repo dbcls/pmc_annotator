@@ -1,0 +1,382 @@
+<title>TogoID vs Europe PMC Agreement</title>
+<style>
+.viz-root {
+  color-scheme: light;
+  --surface-0: #fcfcfb;
+  --surface-1: #f5f4f1;
+  --surface-2: #ecebe7;
+  --border: #e0dfda;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #85837c;
+  --series-both: #2a78d6;
+  --series-togoid: #eb6834;
+  --series-epmc: #1baf7a;
+  --grid: #d9d8d3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .viz-root {
+    color-scheme: dark;
+    --surface-0: #171716;
+    --surface-1: #1e1e1c;
+    --surface-2: #262624;
+    --border: #35342f;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8d84;
+    --series-both: #3987e5;
+    --series-togoid: #d95926;
+    --series-epmc: #199e70;
+    --grid: #35342f;
+  }
+}
+:root[data-theme="dark"] .viz-root {
+  color-scheme: dark;
+  --surface-0: #171716;
+  --surface-1: #1e1e1c;
+  --surface-2: #262624;
+  --border: #35342f;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #8f8d84;
+  --series-both: #3987e5;
+  --series-togoid: #d95926;
+  --series-epmc: #199e70;
+  --grid: #35342f;
+}
+
+.viz-root { background: var(--surface-0); color: var(--text-primary); font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.viz-root * { box-sizing: border-box; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+h1 { font-size: 20px; font-weight: 650; margin: 0 0 4px; }
+.subtitle { color: var(--text-secondary); font-size: 13px; margin: 0 0 24px; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 28px; }
+.kpi { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.kpi .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+.kpi .value { font-size: 24px; font-weight: 650; font-variant-numeric: proportional-nums; }
+.kpi .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px 18px; margin-bottom: 20px; }
+.card h2 { font-size: 15px; font-weight: 650; margin: 0 0 2px; }
+.card .desc { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 16px; max-width: 720px; }
+
+svg text { fill: var(--text-secondary); font-size: 11px; }
+svg .axis-line { stroke: var(--grid); stroke-width: 1; }
+.bar-value { fill: var(--text-primary); font-size: 11px; font-weight: 600; }
+
+.legend { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+
+.tooltip { position: fixed; pointer-events: none; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.5; box-shadow: 0 4px 16px rgba(0,0,0,.18); display: none; z-index: 50; max-width: 260px; }
+.tooltip .t-title { font-weight: 650; margin-bottom: 2px; }
+.tooltip .t-row { display: flex; justify-content: space-between; gap: 14px; color: var(--text-secondary); }
+.tooltip .t-row b { color: var(--text-primary); font-weight: 600; }
+
+table.datatable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.datatable th, table.datatable td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+table.datatable th:first-child, table.datatable td:first-child { text-align: left; font-variant-numeric: normal; }
+table.datatable th { color: var(--text-secondary); font-weight: 600; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--surface-1); }
+table.datatable th.sorted::after { content: " v"; }
+table.datatable tbody tr:hover { background: var(--surface-2); }
+.table-scroll { max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+.table-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 12px; flex-wrap: wrap; }
+.search-input { background: var(--surface-0); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12.5px; color: var(--text-primary); width: 220px; }
+.search-input:focus { outline: 2px solid var(--series-both); outline-offset: 1px; }
+.hint { font-size: 11.5px; color: var(--text-muted); }
+</style>
+
+<div class="viz-root">
+<div class="wrap">
+  <h1>TogoID vs Europe PMC - per-document agreement</h1>
+  <p class="subtitle" id="subtitleLine">Loading...</p>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="card">
+    <h2>Papers by %% found in common (agreement rate)</h2>
+    <p class="desc">Of papers where either extractor found at least one accession, how much of each paper's total ended up confirmed by <b>both</b>. Bucketed in 10-point steps.</p>
+    <svg id="histChart" width="100%" viewBox="0 0 1080 340" style="overflow: visible;"></svg>
+  </div>
+
+  <div class="card">
+    <h2>Top databases by mentions</h2>
+    <p class="desc">The 15 databases with the most total mentions, split by which side found them.</p>
+    <div class="legend" id="dbLegend"></div>
+    <svg id="dbChart" width="100%" viewBox="0 0 1080 460" style="overflow: visible;"></svg>
+  </div>
+
+  <div class="card">
+    <h2>Per-document divergence</h2>
+    <p class="desc">Each dot is one paper with >=1 accession on either side. X = accessions only TogoID found, Y = accessions only Europe PMC found. Points near the bottom-left agree closely; points far out on either axis are where one extractor is finding a lot the other misses. Hover a dot for detail.</p>
+    <svg id="scatterChart" width="100%" viewBox="0 0 1080 420" style="overflow: visible;"></svg>
+  </div>
+
+  <div class="card">
+    <h2>Per-document table</h2>
+    <p class="desc" id="tableDesc"></p>
+    <div class="table-controls">
+      <input class="search-input" id="tableSearch" placeholder="Filter by doc_id..." />
+      <span class="hint">Click a column header to sort</span>
+    </div>
+    <div class="table-scroll">
+      <table class="datatable" id="dataTable">
+        <thead>
+          <tr>
+            <th data-key="doc_id" style="text-align:left">doc_id</th>
+            <th data-key="both">both</th>
+            <th data-key="togoid_only">togoid only</th>
+            <th data-key="europepmc_only">epmc only</th>
+            <th data-key="total">total</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const DATA = __DATA_PLACEHOLDER__;
+
+const svgns = "http://www.w3.org/2000/svg";
+function el(tag, attrs) {
+  const e = document.createElementNS(svgns, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function fmt(n) { return n.toLocaleString(); }
+
+const tooltip = document.getElementById('tooltip');
+function showTip(x, y, html) {
+  tooltip.innerHTML = html;
+  tooltip.style.display = 'block';
+  const r = tooltip.getBoundingClientRect();
+  let left = x + 14, top = y + 14;
+  if (left + r.width > window.innerWidth - 10) left = x - r.width - 14;
+  if (top + r.height > window.innerHeight - 10) top = y - r.height - 14;
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
+}
+function hideTip() { tooltip.style.display = 'none'; }
+
+// ---------- KPI row ----------
+(function renderKPIs() {
+  const s = DATA.summary;
+  const totalAcc = s.both + s.togoid_only + s.europepmc_only;
+  const pctBoth = (100 * s.both / totalAcc).toFixed(1);
+  const kpis = [
+    { label: 'Papers processed', value: fmt(DATA.n_total_papers), sub: '' },
+    { label: 'Papers with >=1 accession', value: fmt(DATA.n_with_data), sub: (100 * DATA.n_with_data / DATA.n_total_papers).toFixed(1) + '% of total' },
+    { label: 'Papers with none found', value: fmt(DATA.n_no_data), sub: (100 * DATA.n_no_data / DATA.n_total_papers).toFixed(1) + '% of total' },
+    { label: 'Accessions found by both', value: pctBoth + '%', sub: fmt(s.both) + ' of ' + fmt(totalAcc) + ' distinct accessions' },
+  ];
+  const row = document.getElementById('kpiRow');
+  kpis.forEach(k => {
+    const d = document.createElement('div');
+    d.className = 'kpi';
+    d.innerHTML = `<div class="label">${k.label}</div><div class="value">${k.value}</div><div class="sub">${k.sub}</div>`;
+    row.appendChild(d);
+  });
+  const runLabel = DATA.run_label ? `${DATA.run_label} | ` : '';
+  document.getElementById('subtitleLine').textContent =
+    `${runLabel}${fmt(DATA.n_total_papers)} papers checked | ${fmt(DATA.n_with_data)} contained a tracked identifier on at least one side`;
+})();
+
+// ---------- Histogram: papers by %-both bucket ----------
+(function renderHistogram() {
+  const svg = document.getElementById('histChart');
+  const W = 1080, H = 340, padL = 46, padR = 16, padT = 16, padB = 40;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const data = DATA.histogram;
+  const maxN = Math.max(...data.map(d => d.n_documents), 1);
+  const bw = plotW / data.length;
+  const barW = Math.min(bw - 14, 64);
+
+  svg.appendChild(el('line', { x1: padL, x2: padL, y1: padT, y2: padT + plotH, class: 'axis-line' }));
+  svg.appendChild(el('line', { x1: padL, x2: padL + plotW, y1: padT + plotH, y2: padT + plotH, class: 'axis-line' }));
+
+  const ticks = 4;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(maxN * i / ticks);
+    const y = padT + plotH - (plotH * i / ticks);
+    svg.appendChild(el('line', { x1: padL, x2: padL + plotW, y1: y, y2: y, class: 'axis-line', 'stroke-dasharray': '0' }));
+    const t = el('text', { x: padL - 8, y: y + 4, 'text-anchor': 'end' });
+    t.textContent = fmt(v);
+    svg.appendChild(t);
+  }
+
+  data.forEach((d, i) => {
+    const cx = padL + bw * i + bw / 2;
+    const h = plotH * d.n_documents / maxN;
+    const x = cx - barW / 2;
+    const y = padT + plotH - h;
+    const rect = el('rect', { x, y, width: barW, height: Math.max(h, 1), rx: 4, ry: 4, fill: 'var(--series-both)' });
+    rect.addEventListener('mousemove', (ev) => showTip(ev.clientX, ev.clientY,
+      `<div class="t-title">${d.pct_both_bucket} found by both</div><div class="t-row"><span>Papers</span><b>${fmt(d.n_documents)}</b></div>`));
+    rect.addEventListener('mouseleave', hideTip);
+    svg.appendChild(rect);
+
+    if (d.n_documents > 0) {
+      const label = el('text', { x: cx, y: y - 6, 'text-anchor': 'middle', class: 'bar-value' });
+      label.textContent = fmt(d.n_documents);
+      svg.appendChild(label);
+    }
+    const xt = el('text', { x: cx, y: padT + plotH + 18, 'text-anchor': 'middle' });
+    xt.textContent = d.pct_both_bucket;
+    svg.appendChild(xt);
+  });
+
+  if (DATA.n_no_data > 0) {
+    const note = el('text', { x: padL, y: H - 4, 'text-anchor': 'start', fill: 'var(--text-muted)' });
+    note.textContent = `+ ${fmt(DATA.n_no_data)} papers with zero accessions on either side (not shown - no rate to bucket)`;
+    svg.appendChild(note);
+  }
+})();
+
+// ---------- Grouped bar: top databases ----------
+(function renderDbChart() {
+  const svg = document.getElementById('dbChart');
+  const W = 1080, H = 460, padL = 80, padR = 16, padT = 10, padB = 90;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const data = DATA.top_db;
+  const series = [
+    { key: 'both', label: 'Both', color: 'var(--series-both)' },
+    { key: 'togoid_only', label: 'TogoID only', color: 'var(--series-togoid)' },
+    { key: 'europepmc_only', label: 'Europe PMC only', color: 'var(--series-epmc)' },
+  ];
+  const legend = document.getElementById('dbLegend');
+  series.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<span class="legend-dot" style="background:${s.color}"></span>${s.label}`;
+    legend.appendChild(item);
+  });
+
+  const maxV = Math.max(...data.map(d => Math.max(d.both, d.togoid_only, d.europepmc_only)), 1);
+  const useLog = maxV > 200;
+  const scale = v => {
+    if (!useLog) return plotH * v / maxV;
+    return v <= 0 ? 0 : plotH * Math.log10(v + 1) / Math.log10(maxV + 1);
+  };
+
+  svg.appendChild(el('line', { x1: padL, x2: padL, y1: padT, y2: padT + plotH, class: 'axis-line' }));
+  svg.appendChild(el('line', { x1: padL, x2: padL + plotW, y1: padT + plotH, y2: padT + plotH, class: 'axis-line' }));
+  if (useLog) {
+    const note = el('text', { x: padL, y: padT - 0, 'text-anchor': 'start', fill: 'var(--text-muted)' });
+    note.setAttribute('y', padT - 2);
+    note.textContent = 'log scale (counts span a wide range)';
+    svg.appendChild(note);
+  }
+
+  const groupW = plotW / data.length;
+  const barW = Math.min((groupW - 16) / 3, 20);
+  data.forEach((d, i) => {
+    const gx = padL + groupW * i + groupW / 2;
+    series.forEach((s, si) => {
+      const v = d[s.key];
+      const h = scale(v);
+      const x = gx - (barW * 1.5) + si * (barW + 2);
+      const y = padT + plotH - h;
+      const rect = el('rect', { x, y, width: barW, height: Math.max(h, v > 0 ? 1 : 0), rx: 3, ry: 3, fill: s.color });
+      rect.addEventListener('mousemove', (ev) => showTip(ev.clientX, ev.clientY,
+        `<div class="t-title">${d.db}</div>` + series.map(s2 =>
+          `<div class="t-row"><span>${s2.label}</span><b>${fmt(d[s2.key])}</b></div>`).join('')));
+      rect.addEventListener('mouseleave', hideTip);
+      svg.appendChild(rect);
+    });
+    const xt = el('text', { x: gx, y: padT + plotH + 16, 'text-anchor': 'end', transform: `rotate(-40 ${gx} ${padT + plotH + 16})` });
+    xt.textContent = d.db;
+    svg.appendChild(xt);
+  });
+})();
+
+// ---------- Scatter: per-doc divergence ----------
+(function renderScatter() {
+  const svg = document.getElementById('scatterChart');
+  const W = 1080, H = 420, padL = 50, padR = 20, padT = 16, padB = 46;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const pts = DATA.scatter;
+  const maxX = Math.max(...pts.map(p => p.togoid_only), 1);
+  const maxY = Math.max(...pts.map(p => p.europepmc_only), 1);
+  const maxAxis = Math.max(maxX, maxY);
+
+  svg.appendChild(el('line', { x1: padL, x2: padL, y1: padT, y2: padT + plotH, class: 'axis-line' }));
+  svg.appendChild(el('line', { x1: padL, x2: padL + plotW, y1: padT + plotH, y2: padT + plotH, class: 'axis-line' }));
+
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(maxAxis * i / ticks);
+    const x = padL + plotW * i / ticks;
+    const y = padT + plotH - plotH * i / ticks;
+    svg.appendChild(el('line', { x1: x, x2: x, y1: padT, y2: padT + plotH, class: 'axis-line', opacity: 0.5 }));
+    svg.appendChild(el('line', { x1: padL, x2: padL + plotW, y1: y, y2: y, class: 'axis-line', opacity: 0.5 }));
+    const tx = el('text', { x: x, y: padT + plotH + 18, 'text-anchor': 'middle' }); tx.textContent = fmt(v); svg.appendChild(tx);
+    const ty = el('text', { x: padL - 8, y: y + 4, 'text-anchor': 'end' }); ty.textContent = fmt(v); svg.appendChild(ty);
+  }
+  const xl = el('text', { x: padL + plotW / 2, y: H - 4, 'text-anchor': 'middle', fill: 'var(--text-secondary)' });
+  xl.textContent = 'accessions found only by TogoID ->'; svg.appendChild(xl);
+  const yl = el('text', { x: -(padT + plotH / 2), y: 14, 'text-anchor': 'middle', transform: 'rotate(-90)', fill: 'var(--text-secondary)' });
+  yl.textContent = 'accessions found only by Europe PMC ->'; svg.appendChild(yl);
+
+  pts.forEach(p => {
+    const cx = padL + plotW * (p.togoid_only / maxAxis);
+    const cy = padT + plotH - plotH * (p.europepmc_only / maxAxis);
+    const dot = el('circle', { cx, cy, r: 4.5, fill: 'var(--series-both)', opacity: 0.55, stroke: 'var(--surface-1)', 'stroke-width': 2 });
+    dot.addEventListener('mousemove', (ev) => showTip(ev.clientX, ev.clientY,
+      `<div class="t-title">${p.doc_id}</div>` +
+      `<div class="t-row"><span>Both</span><b>${fmt(p.both)}</b></div>` +
+      `<div class="t-row"><span>TogoID only</span><b>${fmt(p.togoid_only)}</b></div>` +
+      `<div class="t-row"><span>Europe PMC only</span><b>${fmt(p.europepmc_only)}</b></div>`));
+    dot.addEventListener('mouseleave', hideTip);
+    svg.appendChild(dot);
+  });
+})();
+
+// ---------- Table ----------
+(function renderTable() {
+  let rows = DATA.scatter.slice(); // docs with data
+  document.getElementById('tableDesc').textContent =
+    `${fmt(rows.length)} papers with >=1 accession found (the ${fmt(DATA.n_no_data)} papers with none aren't listed here).`;
+  let sortKey = 'total', sortDir = -1;
+  const tbody = document.getElementById('tableBody');
+  const searchInput = document.getElementById('tableSearch');
+
+  function render() {
+    const q = searchInput.value.trim().toLowerCase();
+    let filtered = q ? rows.filter(r => r.doc_id.toLowerCase().includes(q)) : rows;
+    filtered = filtered.slice().sort((a, b) => {
+      const av = a[sortKey], bv = b[sortKey];
+      if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+      return sortDir * (av - bv);
+    });
+    const MAX_ROWS = 500;
+    tbody.innerHTML = '';
+    filtered.slice(0, MAX_ROWS).forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.doc_id}</td><td>${fmt(r.both)}</td><td>${fmt(r.togoid_only)}</td><td>${fmt(r.europepmc_only)}</td><td>${fmt(r.total)}</td>`;
+      tbody.appendChild(tr);
+    });
+    if (filtered.length > MAX_ROWS) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="5" style="text-align:center;color:var(--text-muted)">showing first ${MAX_ROWS} of ${fmt(filtered.length)} matching rows - refine your search</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+  document.querySelectorAll('#dataTable th').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.key;
+      if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
+      document.querySelectorAll('#dataTable th').forEach(t => t.classList.remove('sorted'));
+      th.classList.add('sorted');
+      render();
+    });
+  });
+  searchInput.addEventListener('input', render);
+  render();
+})();
+</script>

@@ -108,8 +108,9 @@ def document_level(result, out, all_doc_ids=None):
         counts.index.name = 'doc_id'
     counts['total'] = counts[list(buckets)].sum(axis=1)
     counts['has_data'] = counts['total'] > 0
+    total_float = counts['total'].astype(float)  # float division: 0/0 -> NaN, no explicit replace needed
     for col in buckets:
-        counts[f'pct_{col}'] = (counts[col] / counts['total'].replace(0, pd.NA) * 100).round(1)
+        counts[f'pct_{col}'] = (counts[col] / total_float * 100).round(1)
     counts = counts.reset_index().sort_values('doc_id')
     counts.to_csv(out / 'by_document.tsv', sep='\t', index=False)
 
