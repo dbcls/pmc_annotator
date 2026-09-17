@@ -78,6 +78,8 @@ table.datatable th:first-child, table.datatable td:first-child { text-align: lef
 table.datatable th { color: var(--text-secondary); font-weight: 600; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--surface-1); }
 table.datatable th.sorted::after { content: " v"; }
 table.datatable tbody tr:hover { background: var(--surface-2); }
+.doc-link { color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px; }
+.doc-link:hover { text-decoration-color: var(--text-primary); }
 .table-scroll { max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
 .table-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 12px; flex-wrap: wrap; }
 .search-input { background: var(--surface-0); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12.5px; color: var(--text-primary); width: 220px; }
@@ -161,6 +163,11 @@ function el(tag, attrs) {
   return e;
 }
 function fmt(n) { return n.toLocaleString(); }
+function pmcUrl(docId) {
+  return docId.startsWith('PMC')
+    ? `https://europepmc.org/article/PMC/${docId.slice(3)}`
+    : `https://europepmc.org/search?query=${encodeURIComponent(docId)}`;
+}
 
 const tooltip = document.getElementById('tooltip');
 function showTip(x, y, html) {
@@ -402,7 +409,7 @@ function hideTip() { tooltip.style.display = 'none'; }
     tbody.innerHTML = '';
     filtered.slice(0, MAX_ROWS).forEach(r => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${r.doc_id}</td><td>${fmt(r.both)}</td><td>${fmt(r.togoid_only)}</td><td>${fmt(r.europepmc_only)}</td><td>${fmt(r.total)}</td>`;
+      tr.innerHTML = `<td><a class="doc-link" href="${pmcUrl(r.doc_id)}" target="_blank" rel="noopener">${r.doc_id}</a></td><td>${fmt(r.both)}</td><td>${fmt(r.togoid_only)}</td><td>${fmt(r.europepmc_only)}</td><td>${fmt(r.total)}</td>`;
       tbody.appendChild(tr);
     });
     if (filtered.length === 0) {
