@@ -1,13 +1,20 @@
-"""One-command orchestrator: new PMC XML -> TogoID extraction vs EuropePMC comparison.
+"""One-command orchestrator: new PMC XML -> TogoID extraction vs EuropePMC
+comparison, and (optionally) the usage-metrics matrix that feeds the LLM
+reference-role stage.
 
 Chains:
   phase1_ner plan
     -> { phase_regex_togoid run
            -> build_mentions -> verify_t2 -> verify_t3 -> verify_idorg
            -> filter_verified_extraction   }
-    || { epmc_annotations fetch -> epmc_annotations normalize }
-    -> compare_extractions compare
+       -> { compare_extractions compare  (|| epmc fetch+normalize, see below)
+            (optional) build_metrics     (the "matrix") }
     -> (optional) build_comparison_workbook
+
+Verification (T2 -> T3 -> verify_idorg) runs exactly once. Both compare and
+--build-matrix are read-only branches off that same verified output
+(verify/mentions.tsv, verify/verified.idorg.tsv) -- neither re-verifies
+anything, so it's safe/cheap to turn both on.
 
 By default, compare runs against only the *existence-confirmed* half of our
 extraction (T2 -> T3 -> verify_idorg, then filtered), not the raw syntactic
@@ -15,6 +22,8 @@ matches -- so the comparison measures agreement on data we've actually
 verified exists, not on unverified extraction noise. Pass --skip-verify to
 compare against the raw extraction instead (faster, but includes anything
 verification would have caught, e.g. accession-shaped false positives).
+--build-matrix requires verification (it reads the verified.idorg.tsv
+status column), so it's incompatible with --skip-verify.
 
 TogoID extraction(+verification) and the Europe PMC fetch+normalize chain
 don't depend on each other -- they only both feed into compare -- so they
@@ -26,7 +35,12 @@ cheap (phase1_ner/phase_regex_togoid skip work already marked .done; epmc
 fetch skips cached articles; verify_t2/t3/idorg cache their lookups).
 
   python -m pmc_annotator.run_extraction_compare \\
-      --input /path/to/new_pmc_xml --workdir ./workdir --xlsx
+      --input /path/to/new_pmc_xml --workdir ./workdir --xlsx --build-matrix
+
+The LLM reference-role stage (build_windows -> role_prepass ->
+build_llm_payloads -> role_llm_run) is NOT run by this script -- it needs a
+live LLM server (or Azure) and is a separate, stateful step. Run it by hand
+against <workdir>/metrics/usage_long.tsv once --build-matrix has produced it.
 """
 from __future__ import annotations
 import argparse
@@ -126,6 +140,28 @@ def epmc_branch(py, plan_path, epmc_raw, epmc_normalized, mapping, patterns,
     run(normalize_cmd, 'Europe PMC normalize', log_path)
 
 
+def build_matrix(py, wd, mentions_path, verified_path, oa_file_list, min_confidence, log_path):
+    """The usage-metrics matrix (build_metrics.py): usage_by_entry/db/doc/long +
+    DB_CLASS. Reuses the mentions.tsv / verified.idorg.tsv already produced by
+    extraction_branch's verification chain -- does not re-verify anything."""
+    doc_year_path = None
+    if oa_file_list:
+        doc_year_path = wd / 'metrics_in' / 'doc_year.tsv'
+        run([py, '-m', 'pmc_annotator.make_doc_year', 'build',
+             '--oa', str(oa_file_list), '--mentions', str(mentions_path),
+             '--out', str(doc_year_path)],
+            'Matrix: doc_year (publication years)', log_path)
+
+    matrix_dir = wd / 'metrics'
+    cmd = [py, '-m', 'pmc_annotator.build_metrics',
+           '--verified', str(verified_path), '--mentions', str(mentions_path),
+           '--out-dir', str(matrix_dir), '--min-confidence', min_confidence]
+    if doc_year_path:
+        cmd += ['--doc-year', str(doc_year_path)]
+    run(cmd, 'Build usage matrix (build_metrics)', log_path)
+    return matrix_dir
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -151,7 +187,20 @@ def main():
     ap.add_argument('--verify-idorg-workers', type=int, default=8)
     ap.add_argument('--verify-idorg-sleep', type=float, default=0.2)
     ap.add_argument('--xlsx', action='store_true', help='Also build a formatted .xlsx workbook')
+    ap.add_argument('--build-matrix', action='store_true',
+                    help='Also build the usage-metrics matrix (build_metrics.py: '
+                         'usage_by_entry/db/doc/long + DB_CLASS) from the same verified '
+                         'extraction used for compare -- no re-verification. Runs concurrently '
+                         'with compare. Requires verification, so incompatible with --skip-verify.')
+    ap.add_argument('--matrix-min-confidence', choices=['all', 'high'], default='all',
+                    help='build_metrics.py --min-confidence')
+    ap.add_argument('--oa-file-list', default=None,
+                    help='Optional PMC OA oa_file_list.csv; if given, build_metrics also gets a '
+                         'doc_year.tsv (via make_doc_year.py) for usage_by_year.tsv')
     args = ap.parse_args()
+    if args.build_matrix and args.skip_verify:
+        raise SystemExit('--build-matrix requires verification (reads verified.idorg.tsv\'s '
+                         'status column); drop --skip-verify or --build-matrix')
 
     PY = sys.executable
     wd = Path(args.workdir)
@@ -171,16 +220,23 @@ def main():
          '--shard-size', str(args.shard_size)],
         'Plan: build shard_plan.json')
 
+    mentions_path = wd / 'verify' / 'mentions.tsv'
+    verified_idorg_path = wd / 'verify' / 'verified.idorg.tsv'
+    matrix_dir = None
+
     if args.no_parallel:
         togoid_compare_dir = extraction_branch(
             PY, wd, plan_path, regex_togoid_dir, args.patterns, args.extract_workers,
             include_tables, verify, args.verify_idorg_workers, args.verify_idorg_sleep, None)
         epmc_branch(PY, plan_path, epmc_raw, epmc_normalized, args.mapping, args.patterns,
                    args.epmc_workers, include_tables, args.include_med, args.skip_epmc_fetch, None)
+        if args.build_matrix:
+            matrix_dir = build_matrix(PY, wd, mentions_path, verified_idorg_path,
+                                      args.oa_file_list, args.matrix_min_confidence, None)
     else:
         print(f'\nRunning extraction{" + verification" if verify else ""} and Europe PMC '
               f'concurrently; output logged to {log_dir}/*.log\n', flush=True)
-        with ThreadPoolExecutor(max_workers=2) as pool:
+        with ThreadPoolExecutor(max_workers=3 if args.build_matrix else 2) as pool:
             extraction_future = pool.submit(
                 extraction_branch, PY, wd, plan_path, regex_togoid_dir, args.patterns,
                 args.extract_workers, include_tables, verify,
@@ -190,15 +246,28 @@ def main():
                 args.mapping, args.patterns, args.epmc_workers, include_tables,
                 args.include_med, args.skip_epmc_fetch, log_dir / 'epmc.log')
 
-            errors, togoid_compare_dir = [], regex_togoid_dir
+            errors, togoid_compare_dir, matrix_future = [], regex_togoid_dir, None
             try:
                 togoid_compare_dir = extraction_future.result()
+                # Verification is done -- kick off the matrix now, concurrently with
+                # whatever's left of the (independent) Europe PMC branch, rather than
+                # waiting for it. It only reads mentions.tsv/verified.idorg.tsv, so it
+                # never re-verifies anything.
+                if args.build_matrix:
+                    matrix_future = pool.submit(
+                        build_matrix, PY, wd, mentions_path, verified_idorg_path,
+                        args.oa_file_list, args.matrix_min_confidence, log_dir / 'matrix.log')
             except Exception as exc:
                 errors.append(str(exc))
             try:
                 epmc_future.result()
             except Exception as exc:
                 errors.append(str(exc))
+            if matrix_future is not None:
+                try:
+                    matrix_dir = matrix_future.result()
+                except Exception as exc:
+                    errors.append(str(exc))
             if errors:
                 raise SystemExit('\n'.join(errors))
 
@@ -222,6 +291,11 @@ def main():
           f'document_agreement_histogram.tsv / summary.json -> {comparison_dir}/')
     if args.xlsx:
         print(f'workbook -> {wd / "comparison.xlsx"}')
+    if matrix_dir is not None:
+        print(f'usage matrix (usage_by_entry/db/doc/long.tsv) -> {matrix_dir}/')
+        print(f'  next (LLM role stage, run by hand): build_windows.py --usage '
+              f'{matrix_dir / "usage_long.tsv"} --parquet-dir {regex_togoid_dir} '
+              f'--xml-root {args.input} --out {wd / "windows.jsonl"}')
 
 
 if __name__ == '__main__':
