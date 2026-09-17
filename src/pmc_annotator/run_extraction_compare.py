@@ -297,7 +297,8 @@ def main():
         dashboard_cmd = [PY, '-m', 'pmc_annotator.build_comparison_dashboard',
                          '--comparison-dir', str(comparison_dir),
                          '--output', str(wd / 'dashboard.html'),
-                         '--run-label', args.dashboard_label or wd.name]
+                         '--run-label', args.dashboard_label or wd.name,
+                         '--rejected', str(epmc_normalized / 'rejected.json')]
         run(dashboard_cmd, 'Build comparison dashboard')
 
     print(f'\n=== DONE in {time.time() - t_all:.0f}s ===')
