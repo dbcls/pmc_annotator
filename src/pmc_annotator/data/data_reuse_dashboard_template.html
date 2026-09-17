@@ -76,6 +76,16 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
 .doc-link, .acc-link { color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px; }
 .doc-link:hover, .acc-link:hover { text-decoration-color: var(--text-primary); }
 
+table.datatable tbody tr.has-evidence { cursor: pointer; }
+.ev-hint { font-size: 11px; opacity: .6; }
+tr.evidence-row td { background: var(--surface-2); padding: 12px 14px; border-bottom: 1px solid var(--border); }
+tr.evidence-row:hover { background: none; }
+.evidence-card { font-size: 12.5px; }
+.evidence-meta { color: var(--text-muted); font-size: 11.5px; margin-bottom: 8px; }
+.ev-caveat { color: var(--warn-border); }
+.evidence-text { color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.evidence-text mark { background: color-mix(in srgb, var(--series-4) 45%, transparent); color: var(--text-primary); border-radius: 3px; padding: 0 2px; font-weight: 600; }
+
 .cross-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .cross-table th, .cross-table td { padding: 7px 10px; text-align: right; border: 1px solid var(--border); font-variant-numeric: tabular-nums; }
 .cross-table th:first-child, .cross-table td:first-child { text-align: left; font-variant-numeric: normal; color: var(--text-secondary); }
@@ -146,6 +156,21 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
 
   <section id="page-home" class="page">
     <div class="kpi-row" id="kpiRow"></div>
+    <p class="caveat" id="provenanceLine"></p>
+
+    <div class="card">
+      <h2>Credit &times; data type (top 5)</h2>
+      <p class="desc">Papers per data type, split by credit class -- see the full cross-tab on its own tab for all rows.</p>
+      <div id="crossPreview"></div>
+      <button class="load-more-btn" data-goto="crosstab">View full cross-tab &rarr;</button>
+    </div>
+
+    <div class="card">
+      <h2>Most-reused datasets (top 5)</h2>
+      <p class="desc">Ranked by distinct papers, curie-normalized -- see the full list on its own tab.</p>
+      <div id="reusedPreview"></div>
+      <button class="load-more-btn" data-goto="reused">View full list &rarr;</button>
+    </div>
 
     <div class="card placeholder-card">
       <h2>Created vs. used over time</h2>
@@ -205,7 +230,7 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
 
     <div class="card">
       <h2>Explore</h2>
-      <p class="desc">Facets recompute dynamically as you select: AND across facets, OR within one facet (Decision 4-B). Counts shown are distinct papers under the current selection, computed live in your browser (no backend). Each group starts collapsed to its top options -- use "load more" for the rest.</p>
+      <p class="desc">Facets recompute dynamically as you select: AND across facets, OR within one facet (Decision 4-B). Counts shown are distinct papers under the current selection, computed live in your browser (no backend). Each group starts collapsed to its top options -- use "load more" for the rest. Rows marked <span class="ev-hint">&#128269;</span> have an evidence excerpt -- click to expand it (Decision 6).</p>
       <div class="facet-grid">
         <div class="facet-col" id="facetCol"></div>
         <div>
@@ -279,6 +304,7 @@ function hideTip() { tooltip.style.display = 'none'; }
     { label: 'Papers', value: fmt(DATA.n_papers) },
     { label: 'Distinct accessions', value: fmt(DATA.n_accessions), sub: 'curie-normalized, versions collapsed' },
     { label: 'Links (paper x accession)', value: fmt(DATA.n_links) },
+    { label: 'Links per paper', value: DATA.links_per_paper, sub: 'normalized reuse depth (Decision 2) -- year-based rate needs oa_file_list.csv, not yet available' },
   ];
   const row = document.getElementById('kpiRow');
   kpis.forEach(k => {
@@ -287,6 +313,31 @@ function hideTip() { tooltip.style.display = 'none'; }
     d.innerHTML = `<div class="label">${k.label}</div><div class="value">${k.value}</div>${k.sub ? `<div class="sub">${k.sub}</div>` : ''}`;
     row.appendChild(d);
   });
+  const prov = document.getElementById('provenanceLine');
+  if (prov) {
+    prov.textContent = `Snapshot generated ${DATA.generated_at} from ${DATA.source_file} (static precompute, Decision 5-A/9) `
+      + `-- ${fmt(DATA.n_out_of_scope_excluded)} out-of-scope links excluded from the denominator above (Decision 1) but still shown in facets/cross-tab.`;
+  }
+})();
+
+// ---------- Home-page headline previews (Suggestion: tell the story on landing) ----------
+(function renderHomePreviews() {
+  const crossPreview = document.getElementById('crossPreview');
+  if (crossPreview) {
+    const dataTypes = Object.keys(DATA.cross_pivot)
+      .map(dt => ({ dt, total: Object.values(DATA.cross_pivot[dt]).reduce((s, v) => s + v, 0) }))
+      .sort((a, b) => b.total - a.total).slice(0, 5);
+    crossPreview.innerHTML = dataTypes.map(({ dt, total }) => {
+      const cells = DATA.class_order.filter(c => DATA.cross_pivot[dt][c])
+        .map(c => `${CLASS_LABEL[c] || c}: ${fmt(DATA.cross_pivot[dt][c])}`).join(', ');
+      return `<div class="mini-bar-row"><span class="mb-label">${dt}</span><span style="font-size:11.5px;color:var(--text-secondary)">${cells}</span></div>`;
+    }).join('');
+  }
+  const reusedPreview = document.getElementById('reusedPreview');
+  if (reusedPreview) {
+    reusedPreview.innerHTML = DATA.most_reused.slice(0, 5).map(r =>
+      `<div class="mini-bar-row"><span class="mb-label">${r.curie}</span><span class="mb-value">${fmt(r.n_papers)} papers</span></div>`).join('');
+  }
 })();
 
 // ---------- Credit class x data type cross-tab ----------
@@ -452,6 +503,18 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
     });
   }
 
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function renderEvidenceHtml(windowText) {
+    // window_text carries the target accession wrapped in the unicode
+    // markers build_windows.py inserts (\u00ab ... \u00bb) -- escape the
+    // rest for safety, then turn the (unescaped, non-HTML) marker chars
+    // into a <mark> highlight around the accession.
+    const escaped = escapeHtml(windowText);
+    return escaped.replace(/\u00ab([^\u00bb]*)\u00bb/g, '<mark>$1</mark>');
+  }
+
   function renderTable() {
     let filtered = rows.filter(r => matches(r, null));
     const q = searchInput.value.trim().toLowerCase();
@@ -463,23 +526,45 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
     });
     resultCount.textContent = `${fmt(filtered.length)} links`;
     const MAX_ROWS = 300;
+    const extraCols = CURRENT_VIEW === 'qa' ? 2 : 0;
     tbody.innerHTML = '';
     filtered.slice(0, MAX_ROWS).forEach(r => {
       const url = accUrl(r);
       const accCell = url ? `<a class="acc-link" href="${url}" target="_blank" rel="noopener">${r.curie}</a>` : r.curie;
+      const evKey = `${r.doc_id}||${r.db}||${r.id}`;
+      const ev = DATA.evidence[evKey];
       let html = `<td><a class="doc-link" href="${pmcUrl(r.doc_id)}" target="_blank" rel="noopener">${r.doc_id}</a></td>` +
-        `<td>${accCell}</td><td>${CLASS_LABEL[r.class] || r.class}</td><td>${r.data_type}</td>`;
+        `<td>${accCell}${ev ? ' <span class="ev-hint">&#128269;</span>' : ''}</td><td>${CLASS_LABEL[r.class] || r.class}</td><td>${r.data_type}</td>`;
       if (CURRENT_VIEW === 'qa') html += `<td>${r.oracle}</td><td>${r.confidence}</td>`;
       html += `<td>${fmt(r.n_in_doc)}</td>`;
       const tr = document.createElement('tr');
       tr.innerHTML = html;
+      if (ev) {
+        tr.classList.add('has-evidence');
+        tr.addEventListener('click', (evt) => {
+          if (evt.target.closest('a')) return; // don't hijack the PMC/accession links
+          const next = tr.nextElementSibling;
+          if (next && next.classList.contains('evidence-row')) { next.remove(); return; }
+          document.querySelectorAll('.evidence-row').forEach(e => e.remove());
+          const detail = document.createElement('tr');
+          detail.className = 'evidence-row';
+          const occNote = ev.n_occurrences > 1 ? `${fmt(ev.n_occurrences)} occurrences in this paper (showing one representative excerpt)` : '1 occurrence in this paper';
+          const alignNote = ev.align_ok ? '' : ' <span class="ev-caveat">-- extracted from a table/list context, alignment approximate</span>';
+          detail.innerHTML = `<td colspan="${5 + extraCols}"><div class="evidence-card">` +
+            `<div class="evidence-meta">${ev.section_type || 'section unknown'} &middot; ${occNote}${alignNote}</div>` +
+            `<div class="evidence-text">${renderEvidenceHtml(ev.window_text)}</div>` +
+            `</div></td>`;
+          tr.after(detail);
+        });
+      }
       tbody.appendChild(tr);
     });
+    const totalCols = 5 + extraCols;
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">no rows match</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--text-muted)">no rows match</td></tr>`;
     } else if (filtered.length > MAX_ROWS) {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td colspan="7" style="text-align:center;color:var(--text-muted)">showing first ${MAX_ROWS} of ${fmt(filtered.length)} - refine your search or facets</td>`;
+      tr.innerHTML = `<td colspan="${totalCols}" style="text-align:center;color:var(--text-muted)">showing first ${MAX_ROWS} of ${fmt(filtered.length)} - refine your search or facets</td>`;
       tbody.appendChild(tr);
     }
   }
@@ -537,6 +622,10 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
   }
 
   tabButtons.forEach(btn => btn.addEventListener('click', () => goTo(btn.dataset.page)));
+  // home-page preview cards' "View full ... ->" buttons jump to the real tab
+  document.querySelectorAll('[data-goto]').forEach(btn => {
+    btn.addEventListener('click', () => goTo(btn.dataset.goto));
+  });
   goTo('home');
 })();
 </script>
