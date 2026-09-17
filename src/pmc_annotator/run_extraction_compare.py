@@ -218,7 +218,8 @@ def main():
 
     print(f'\n=== DONE in {time.time() - t_all:.0f}s ===')
     print(f'compared against: {"existence-confirmed (T2/T3/verify_idorg)" if verify else "raw extraction (--skip-verify)"}')
-    print(f'comparison.tsv / by_database.tsv / summary.json -> {comparison_dir}/')
+    print(f'comparison.tsv / by_database.tsv / by_document.tsv / '
+          f'document_agreement_histogram.tsv / summary.json -> {comparison_dir}/')
     if args.xlsx:
         print(f'workbook -> {wd / "comparison.xlsx"}')
 

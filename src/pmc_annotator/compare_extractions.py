@@ -80,6 +80,41 @@ def occurrence_details(df, prefix, previews):
     return details.reset_index()
 
 
+def document_level(result, out):
+    """Per-paper breakdown: how many distinct accessions each doc_id has in
+    each membership bucket (europepmc_only / togoid_only / both), plus the
+    percentage each bucket represents of that paper's total (the three
+    percentages sum to 100 per row) -- and a histogram of papers by their
+    %-both (agreement) rate, so you don't need to re-derive this by hand."""
+    buckets = ('both', 'togoid_only', 'europepmc_only')
+    counts = result.groupby(['doc_id', 'membership']).size().unstack(fill_value=0)
+    for col in buckets:
+        if col not in counts:
+            counts[col] = 0
+    counts = counts[list(buckets)]
+    counts['total'] = counts[list(buckets)].sum(axis=1)
+    for col in buckets:
+        counts[f'pct_{col}'] = (counts[col] / counts['total'] * 100).round(1)
+    counts = counts.reset_index().sort_values('doc_id')
+    counts.to_csv(out / 'by_document.tsv', sep='\t', index=False)
+
+    bin_edges = list(range(0, 101, 10))
+    bin_labels = [f'{lo}-{lo + 10}%' for lo in bin_edges[:-1]]
+    agreement_bucket = pd.cut(counts['pct_both'], bins=bin_edges,
+                              labels=bin_labels, include_lowest=True)
+    hist = agreement_bucket.value_counts().reindex(bin_labels, fill_value=0)
+    hist_df = hist.rename_axis('pct_both_bucket').reset_index(name='n_documents')
+    hist_df.to_csv(out / 'document_agreement_histogram.tsv', sep='\t', index=False)
+
+    print(f'\nPer-document agreement histogram ({len(counts)} papers with >=1 accession '
+          f'on either side; bucketed by %% of that paper\'s accessions found by both):')
+    max_n = max(int(hist.max()), 1)
+    for label, n in hist.items():
+        bar = '#' * round(50 * n / max_n)
+        print(f'  {label:>8s} | {bar} {n}')
+    return counts, hist_df
+
+
 def compare(left, right, out, plan_path=None, reconciliation_path=None):
     keys = ['doc_id', 'db', 'surface']
     previews = passage_previews(plan_path)
@@ -100,6 +135,7 @@ def compare(left, right, out, plan_path=None, reconciliation_path=None):
     if reconciliation is not None:
         counts = counts.merge(reconciliation.set_index('db'), left_index=True, right_index=True, how='left')
     counts.to_csv(out / 'by_database.tsv', sep='\t')
+    document_level(result, out)
     summary = {k: int((result.membership == k).sum())
                for k in ('both', 'togoid_only', 'europepmc_only')}
     summary['unit'] = 'distinct paper/database/literal accession'

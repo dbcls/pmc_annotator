@@ -63,12 +63,18 @@ def build(comparison_dir, output, rejected_path=None):
     comparison = pd.read_csv(comparison_dir / 'comparison.tsv', sep='\t')
     by_database = pd.read_csv(comparison_dir / 'by_database.tsv', sep='\t')
     summary = json.loads((comparison_dir / 'summary.json').read_text())
+    by_document_path = comparison_dir / 'by_document.tsv'
+    histogram_path = comparison_dir / 'document_agreement_histogram.tsv'
 
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         summary_df = pd.DataFrame(list(summary.items()), columns=['metric', 'value'])
         _write_table(writer, 'Summary', summary_df)
         _write_table(writer, 'Comparison', comparison)
         _write_table(writer, 'By Database', by_database)
+        if by_document_path.exists():
+            _write_table(writer, 'By Document', pd.read_csv(by_document_path, sep='\t'))
+        if histogram_path.exists():
+            _write_table(writer, 'Agreement Histogram', pd.read_csv(histogram_path, sep='\t'))
         if rejected_path:
             rejected = json.loads(Path(rejected_path).read_text())
             _write_table(writer, 'Rejected', flatten_rejected(rejected))
