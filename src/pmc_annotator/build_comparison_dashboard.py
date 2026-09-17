@@ -37,7 +37,7 @@ def build_payload(comparison_dir, run_label=None):
         ['db', 'both', 'togoid_only', 'europepmc_only', 'total']]
 
     with_data = doc[doc['has_data']] if 'has_data' in doc else doc[doc['total'] > 0]
-    scatter = with_data[['doc_id', 'both', 'togoid_only', 'europepmc_only', 'total']]
+    scatter = with_data[['doc_id', 'both', 'togoid_only', 'europepmc_only', 'total', 'pct_both']]
 
     n_total = len(doc)
     n_with_data = int(with_data.shape[0])

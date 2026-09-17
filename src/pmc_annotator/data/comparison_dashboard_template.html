@@ -5,16 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TogoID vs Europe PMC Agreement</title>
 <style>
-/* html/body carry the surface color so there's no default-white flash
-   around .viz-root when the OS is in dark mode -- this page is a
-   standalone document (opened via file:// or a plain static server),
-   not wrapped by anything that would otherwise supply that. */
-html, body { margin: 0; padding: 0; min-height: 100%; background: #fcfcfb; }
-@media (prefers-color-scheme: dark) {
-  html, body { background: #171716; }
-}
+/* Plain, unconditional prefers-color-scheme switch -- no viewer-specific
+   data-theme machinery (that only matters inside Claude's Artifact
+   viewer chrome; this page is a standalone document, opened via a plain
+   static server or file://, so the OS/browser setting is the only signal
+   there is). html/body carry the same background as .viz-root so there's
+   no default-white flash around it in dark mode. */
+:root { color-scheme: light dark; }
+html, body { margin: 0; padding: 0; min-height: 100%; background: #fcfcfb; color: #0b0b0b; }
 .viz-root {
-  color-scheme: light;
   --surface-0: #fcfcfb;
   --surface-1: #f5f4f1;
   --surface-2: #ecebe7;
@@ -28,8 +27,8 @@ html, body { margin: 0; padding: 0; min-height: 100%; background: #fcfcfb; }
   --grid: #d9d8d3;
 }
 @media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) .viz-root {
-    color-scheme: dark;
+  html, body { background: #171716; color: #ffffff; }
+  .viz-root {
     --surface-0: #171716;
     --surface-1: #1e1e1c;
     --surface-2: #262624;
@@ -42,20 +41,6 @@ html, body { margin: 0; padding: 0; min-height: 100%; background: #fcfcfb; }
     --series-epmc: #199e70;
     --grid: #35342f;
   }
-}
-:root[data-theme="dark"] .viz-root {
-  color-scheme: dark;
-  --surface-0: #171716;
-  --surface-1: #1e1e1c;
-  --surface-2: #262624;
-  --border: #35342f;
-  --text-primary: #ffffff;
-  --text-secondary: #c3c2b7;
-  --text-muted: #8f8d84;
-  --series-both: #3987e5;
-  --series-togoid: #d95926;
-  --series-epmc: #199e70;
-  --grid: #35342f;
 }
 
 .viz-root { background: var(--surface-0); color: var(--text-primary); font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
@@ -98,6 +83,13 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
 .search-input { background: var(--surface-0); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12.5px; color: var(--text-primary); width: 220px; }
 .search-input:focus { outline: 2px solid var(--series-both); outline-offset: 1px; }
 .hint { font-size: 11.5px; color: var(--text-muted); }
+
+.filter-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: color-mix(in srgb, var(--series-both) 14%, var(--surface-1)); border: 1px solid var(--series-both); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; font-size: 12.5px; }
+.filter-banner[hidden] { display: none; }
+.filter-banner .banner-text { color: var(--text-primary); font-weight: 600; }
+.clear-filter-btn { background: var(--surface-0); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 12px; color: var(--text-primary); cursor: pointer; }
+.clear-filter-btn:hover { background: var(--surface-2); }
+.hist-bar { cursor: pointer; }
 </style>
 </head>
 <body>
@@ -128,12 +120,16 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
     <svg id="scatterChart" width="100%" viewBox="0 0 1080 420" style="overflow: visible;"></svg>
   </div>
 
-  <div class="card">
+  <div class="card" id="tableCard">
     <h2>Per-document table</h2>
     <p class="desc" id="tableDesc"></p>
+    <div class="filter-banner" id="bucketFilterBanner" hidden>
+      <span class="banner-text"></span>
+      <button class="clear-filter-btn" id="clearBucketFilter" type="button">Clear filter</button>
+    </div>
     <div class="table-controls">
       <input class="search-input" id="tableSearch" placeholder="Filter by doc_id..." />
-      <span class="hint">Click a column header to sort</span>
+      <span class="hint">Click a column header to sort. Click a bar in the histogram above to filter to that bucket.</span>
     </div>
     <div class="table-scroll">
       <table class="datatable" id="dataTable">
@@ -230,10 +226,17 @@ function hideTip() { tooltip.style.display = 'none'; }
     const h = plotH * d.n_documents / maxN;
     const x = cx - barW / 2;
     const y = padT + plotH - h;
-    const rect = el('rect', { x, y, width: barW, height: Math.max(h, 1), rx: 4, ry: 4, fill: 'var(--series-both)' });
+    const lo = i * 10, hi = (i + 1) * 10;
+    const rect = el('rect', { x, y, width: barW, height: Math.max(h, 1), rx: 4, ry: 4, fill: 'var(--series-both)', class: 'hist-bar' });
     rect.addEventListener('mousemove', (ev) => showTip(ev.clientX, ev.clientY,
-      `<div class="t-title">${d.pct_both_bucket} found by both</div><div class="t-row"><span>Papers</span><b>${fmt(d.n_documents)}</b></div>`));
+      `<div class="t-title">${d.pct_both_bucket} found by both</div><div class="t-row"><span>Papers</span><b>${fmt(d.n_documents)}</b></div>` +
+      (d.n_documents > 0 ? '<div class="t-row" style="margin-top:4px"><span>Click to see these papers below</span></div>' : '')));
     rect.addEventListener('mouseleave', hideTip);
+    if (d.n_documents > 0) {
+      rect.addEventListener('click', () => {
+        if (window.TableFilter) window.TableFilter.setBucket(lo, hi, d.pct_both_bucket);
+      });
+    }
     svg.appendChild(rect);
 
     if (d.n_documents > 0) {
@@ -360,18 +363,36 @@ function hideTip() { tooltip.style.display = 'none'; }
   });
 })();
 
-// ---------- Table ----------
+// ---------- Table (with optional bucket filter set by clicking a histogram bar) ----------
 (function renderTable() {
-  let rows = DATA.scatter.slice(); // docs with data
-  document.getElementById('tableDesc').textContent =
-    `${fmt(rows.length)} papers with >=1 accession found (the ${fmt(DATA.n_no_data)} papers with none aren't listed here).`;
+  const rows = DATA.scatter.slice(); // docs with data
   let sortKey = 'total', sortDir = -1;
+  let bucketFilter = null; // {lo, hi, label} or null
   const tbody = document.getElementById('tableBody');
   const searchInput = document.getElementById('tableSearch');
+  const banner = document.getElementById('bucketFilterBanner');
+  const bannerText = banner.querySelector('.banner-text');
+
+  function bucketRows() {
+    if (!bucketFilter) return rows;
+    const { lo, hi } = bucketFilter;
+    // Mirrors pandas.cut(bins=[0,10,...,100], include_lowest=True): the
+    // first bucket is [0,10] (closed both ends), every other bucket is
+    // (lo, hi] (open on the low end) -- so a value of exactly 10.0 lands
+    // in "0-10%", not "10-20%". Small epsilon guards float rounding.
+    return rows.filter(r => (lo === 0 || r.pct_both > lo + 1e-9) && r.pct_both <= hi + 1e-9);
+  }
 
   function render() {
+    const base = bucketRows();
+    document.getElementById('tableDesc').textContent = bucketFilter
+      ? `${fmt(base.length)} papers in the ${bucketFilter.label} agreement bucket.`
+      : `${fmt(rows.length)} papers with >=1 accession found (the ${fmt(DATA.n_no_data)} papers with none aren't listed here).`;
+    banner.hidden = !bucketFilter;
+    if (bucketFilter) bannerText.textContent = `Filtered to ${bucketFilter.label} bucket (${fmt(base.length)} papers)`;
+
     const q = searchInput.value.trim().toLowerCase();
-    let filtered = q ? rows.filter(r => r.doc_id.toLowerCase().includes(q)) : rows;
+    let filtered = q ? base.filter(r => r.doc_id.toLowerCase().includes(q)) : base;
     filtered = filtered.slice().sort((a, b) => {
       const av = a[sortKey], bv = b[sortKey];
       if (typeof av === 'string') return sortDir * av.localeCompare(bv);
@@ -384,7 +405,11 @@ function hideTip() { tooltip.style.display = 'none'; }
       tr.innerHTML = `<td>${r.doc_id}</td><td>${fmt(r.both)}</td><td>${fmt(r.togoid_only)}</td><td>${fmt(r.europepmc_only)}</td><td>${fmt(r.total)}</td>`;
       tbody.appendChild(tr);
     });
-    if (filtered.length > MAX_ROWS) {
+    if (filtered.length === 0) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="5" style="text-align:center;color:var(--text-muted)">no papers match</td>`;
+      tbody.appendChild(tr);
+    } else if (filtered.length > MAX_ROWS) {
       const tr = document.createElement('tr');
       tr.innerHTML = `<td colspan="5" style="text-align:center;color:var(--text-muted)">showing first ${MAX_ROWS} of ${fmt(filtered.length)} matching rows - refine your search</td>`;
       tbody.appendChild(tr);
@@ -400,6 +425,21 @@ function hideTip() { tooltip.style.display = 'none'; }
     });
   });
   searchInput.addEventListener('input', render);
+  document.getElementById('clearBucketFilter').addEventListener('click', () => {
+    bucketFilter = null;
+    render();
+  });
+
+  // exposed so a click on a histogram bar (rendered earlier, in its own
+  // scope) can filter this table to that bucket's papers
+  window.TableFilter = {
+    setBucket(lo, hi, label) {
+      bucketFilter = { lo, hi, label };
+      render();
+      document.getElementById('tableCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
+  };
+
   render();
 })();
 </script>
