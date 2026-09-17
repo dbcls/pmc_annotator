@@ -137,80 +137,90 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
   <p class="caveat">Scope: confirmed accessions only, out-of-scope databases excluded from these totals (Decision 1). Figures reflect this run's subset, not the full PMC corpus -- treat as a lower bound. <b>Role (generated / used / mentioned) is not included</b> -- see the placeholder below for why.</p>
 
   <div class="page-tabs" id="pageTabs">
-    <button data-page="public" class="active">Public view</button>
-    <button data-page="qa">Internal QA view</button>
+    <button data-page="home" class="active">Dashboard</button>
+    <button data-page="crosstab">Credit &times; data type</button>
+    <button data-page="reused">Most reused</button>
+    <button data-page="explore-public">Explore (public)</button>
+    <button data-page="explore-qa">Explore (internal QA)</button>
   </div>
 
-  <div class="kpi-row" id="kpiRow"></div>
+  <section id="page-home" class="page">
+    <div class="kpi-row" id="kpiRow"></div>
 
-  <div class="card" id="qaSummaryCard" data-qa-only hidden>
-    <h2>QA summary</h2>
-    <p class="desc">Verification route and extraction-confidence breakdown across all confirmed links -- hidden from the public view.</p>
-    <div class="qa-summary-grid">
-      <div>
-        <h3 class="mini-heading">Verification route (oracle)</h3>
-        <div id="oracleBars"></div>
-      </div>
-      <div>
-        <h3 class="mini-heading">Extraction confidence</h3>
-        <div id="confidenceBars"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card placeholder-card">
-    <h2>Created vs. used over time</h2>
-    <p class="desc">The design's primary headline -- role assigned per (paper, accession), trended by publication year.</p>
-    <div class="placeholder-body">
-      <div class="placeholder-icon">&#9203;</div>
-      <div class="placeholder-text">
-        <b>Not yet available.</b> Role classification needs the LLM stage
-        (<code>build_windows</code> &rarr; <code>role_prepass</code> &rarr; <code>build_llm_payloads</code> &rarr; <code>role_llm_run</code>),
-        which requires a live LLM server and has not been run on this dataset.
-        Publication year also needs an <code>oa_file_list.csv</code> not currently available.
-        This card will replace itself once both exist -- no placeholder numbers shown.
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Credit class &times; data type</h2>
-    <p class="desc">Papers referencing each combination. Credit class is DB_CLASS (deposit vs. curated vs. derived vs. out-of-scope); data type is TogoID's own per-database category -- these are orthogonal axes (Framing 3), so cells don't sum to the paper total.</p>
-    <div class="table-scroll" style="max-height: 420px;">
-      <table class="cross-table" id="crossTable"></table>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Most-reused datasets</h2>
-    <p class="desc">Ranked by distinct papers, keyed on a curie-normalized accession (db:id with version suffixes collapsed, e.g. NM_000546.5/.6 count as one) so version splits don't fragment the ranking.</p>
-    <div class="data-warn">Some highly-ranked <code>insdc</code> entries are short alphanumeric codes that are also common chemical/compound names (e.g. drug codes) -- they pass existence verification because they happen to be real ENA entries too, the same namespace-collision pattern found with early UniProt matching this session. Worth spot-checking before treating this list as citation-quality data.</div>
-    <div class="table-scroll" style="max-height: 360px;">
-      <table class="datatable" id="reusedTable">
-        <thead><tr><th style="text-align:left">accession</th><th style="text-align:left">database</th><th>papers</th></tr></thead>
-        <tbody id="reusedTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Explore</h2>
-    <p class="desc">Facets recompute dynamically as you select: AND across facets, OR within one facet (Decision 4-B). Counts shown are distinct papers under the current selection, computed live in your browser (no backend). Each group starts collapsed to its top options -- use "load more" for the rest.</p>
-    <div class="facet-grid">
-      <div class="facet-col" id="facetCol"></div>
-      <div>
-        <div class="table-controls">
-          <input class="search-input" id="tableSearch" placeholder="Filter by doc_id or accession..." />
-          <span class="hint" id="resultCount"></span>
+    <div class="card placeholder-card">
+      <h2>Created vs. used over time</h2>
+      <p class="desc">The design's primary headline -- role assigned per (paper, accession), trended by publication year.</p>
+      <div class="placeholder-body">
+        <div class="placeholder-icon">&#9203;</div>
+        <div class="placeholder-text">
+          <b>Not yet available.</b> Role classification needs the LLM stage
+          (<code>build_windows</code> &rarr; <code>role_prepass</code> &rarr; <code>build_llm_payloads</code> &rarr; <code>role_llm_run</code>),
+          which requires a live LLM server and has not been run on this dataset.
+          Publication year also needs an <code>oa_file_list.csv</code> not currently available.
+          This card will replace itself once both exist -- no placeholder numbers shown.
         </div>
-        <div class="table-scroll">
-          <table class="datatable" id="dataTable">
-            <thead>
-              <tr id="dataTableHead">
-                <th data-key="doc_id" style="text-align:left">PMC</th>
-                <th data-key="curie" style="text-align:left">accession</th>
-                <th data-key="class" style="text-align:left">credit class</th>
-                <th data-key="data_type" style="text-align:left">data type</th>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-crosstab" class="page" hidden>
+    <div class="card">
+      <h2>Credit class &times; data type</h2>
+      <p class="desc">Papers referencing each combination. Credit class is DB_CLASS (deposit vs. curated vs. derived vs. out-of-scope); data type is TogoID's own per-database category -- these are orthogonal axes (Framing 3), so cells don't sum to the paper total.</p>
+      <div class="table-scroll" style="max-height: 420px;">
+        <table class="cross-table" id="crossTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-reused" class="page" hidden>
+    <div class="card">
+      <h2>Most-reused datasets</h2>
+      <p class="desc">Ranked by distinct papers, keyed on a curie-normalized accession (db:id with version suffixes collapsed, e.g. NM_000546.5/.6 count as one) so version splits don't fragment the ranking.</p>
+      <div class="data-warn">Some highly-ranked <code>insdc</code> entries are short alphanumeric codes that are also common chemical/compound names (e.g. drug codes) -- they pass existence verification because they happen to be real ENA entries too, the same namespace-collision pattern found with early UniProt matching this session. Worth spot-checking before treating this list as citation-quality data.</div>
+      <div class="table-scroll" style="max-height: 360px;">
+        <table class="datatable" id="reusedTable">
+          <thead><tr><th style="text-align:left">accession</th><th style="text-align:left">database</th><th>papers</th></tr></thead>
+          <tbody id="reusedTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-explore" class="page" hidden>
+    <div class="card" id="qaSummaryCard" data-qa-only hidden>
+      <h2>QA summary</h2>
+      <p class="desc">Verification route and extraction-confidence breakdown across all confirmed links -- hidden from the public view.</p>
+      <div class="qa-summary-grid">
+        <div>
+          <h3 class="mini-heading">Verification route (oracle)</h3>
+          <div id="oracleBars"></div>
+        </div>
+        <div>
+          <h3 class="mini-heading">Extraction confidence</h3>
+          <div id="confidenceBars"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Explore</h2>
+      <p class="desc">Facets recompute dynamically as you select: AND across facets, OR within one facet (Decision 4-B). Counts shown are distinct papers under the current selection, computed live in your browser (no backend). Each group starts collapsed to its top options -- use "load more" for the rest.</p>
+      <div class="facet-grid">
+        <div class="facet-col" id="facetCol"></div>
+        <div>
+          <div class="table-controls">
+            <input class="search-input" id="tableSearch" placeholder="Filter by doc_id or accession..." />
+            <span class="hint" id="resultCount"></span>
+          </div>
+          <div class="table-scroll">
+            <table class="datatable" id="dataTable">
+              <thead>
+                <tr id="dataTableHead">
+                  <th data-key="doc_id" style="text-align:left">PMC</th>
+                  <th data-key="curie" style="text-align:left">accession</th>
+                  <th data-key="class" style="text-align:left">credit class</th>
+                  <th data-key="data_type" style="text-align:left">data type</th>
                 <th data-key="n_in_doc">occurrences</th>
               </tr>
             </thead>
@@ -220,6 +230,7 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
       </div>
     </div>
   </div>
+</section>
 </div>
 </div>
 
@@ -504,18 +515,29 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
   renderTable();
 })();
 
-// ---------- Page-level tabs: Public view / Internal QA view ----------
+// ---------- Page-level tabs: Dashboard / Credit x data type / Most reused / Explore (public|qa) ----------
+// Each tab shows exactly one <section class="page">, the rest hidden -- real
+// navigation between separate pages, not a single continuously-scrolling one.
 (function renderPageTabs() {
   const qaCard = document.getElementById('qaSummaryCard');
-  document.getElementById('pageTabs').querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      CURRENT_VIEW = btn.dataset.page;
-      document.getElementById('pageTabs').querySelectorAll('button')
-        .forEach(b => b.classList.toggle('active', b === btn));
+  const tabButtons = [...document.getElementById('pageTabs').querySelectorAll('button')];
+  const pageIds = { home: 'page-home', crosstab: 'page-crosstab', reused: 'page-reused',
+                    'explore-public': 'page-explore', 'explore-qa': 'page-explore' };
+  const allSections = [...new Set(Object.values(pageIds))].map(id => document.getElementById(id));
+
+  function goTo(pageKey) {
+    allSections.forEach(s => { s.hidden = true; });
+    document.getElementById(pageIds[pageKey]).hidden = false;
+    tabButtons.forEach(b => b.classList.toggle('active', b.dataset.page === pageKey));
+    if (pageKey === 'explore-public' || pageKey === 'explore-qa') {
+      CURRENT_VIEW = pageKey === 'explore-qa' ? 'qa' : 'public';
       qaCard.hidden = CURRENT_VIEW !== 'qa';
       window.Explore.refresh();
-    });
-  });
+    }
+  }
+
+  tabButtons.forEach(btn => btn.addEventListener('click', () => goTo(btn.dataset.page)));
+  goTo('home');
 })();
 </script>
 </body>
