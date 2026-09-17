@@ -52,6 +52,38 @@ DB_CLASS = {
     "bioproject":"deposited_research_record",   # INSDC BioProject (寄託系)
     "hp_inheritance":"out_of_scope",            # HPO遺伝形式サブセット (概念)
     "uberon":"out_of_scope",                    # 解剖オントロジー (概念)
+
+    # 未分類38件の追記: togoid_extract_patterns.yaml の safe/context_required
+    # に存在するが DB_CLASS に無く、COALESCE(...,'out_of_scope') で無条件に
+    # out_of_scope へ落ちていたもの。insdc (生シーケンス寄託) が最大の実害
+    # で、out_of_scope の大半 (~98% of mentions) を占めていた -- 概念/文献
+    # 識別子ではなく明確な deposited_research_record。
+    # deposited_research_record: 生の研究データ寄託 (GEO/SRA/assembly と同格)
+    "insdc":"deposited_research_record","insdc_master":"deposited_research_record",
+    "biosample":"deposited_research_record","bioproject_umbrella":"deposited_research_record",
+    "assembly_refseq":"deposited_research_record",
+    "jga_dataset":"deposited_research_record","jga_study":"deposited_research_record",
+    "gea":"deposited_research_record","nbdc_human_db":"deposited_research_record",
+    "clinvar":"deposited_research_record",   # 提出ベースの臨床バリアント解釈 (寄託系)
+    # deposited_entity_registry: 新規entity登録 (glytoucanと同格)
+    "glycomotif":"deposited_entity_registry",
+    # curated_entity_registry: キュレータが命名・同定するレジストリ
+    "lrg":"curated_entity_registry","mgi_genotype":"curated_entity_registry",
+    "omim_phenotype":"curated_entity_registry","orphanet_gene":"curated_entity_registry",
+    "orphanet_phenotype":"curated_entity_registry","swisslipids":"curated_entity_registry",
+    "vgnc":"curated_entity_registry",
+    # derived_curated: 注釈・派生の産物 (RefSeq/UniProt/Pfam等と同格)
+    "cellosaurus":"derived_curated","chembl_compound":"derived_curated",
+    "chembl_target":"derived_curated","hmdb":"derived_curated",
+    "lncbook_gene":"derived_curated","mgi_gene":"derived_curated",
+    "pubchem_pathway":"derived_curated","reactome_reaction":"derived_curated",
+    "rfam":"derived_curated","rnacentral":"derived_curated",
+    "wormbase_gene":"derived_curated","xenbase_gene":"derived_curated",
+    "zfin_transcript":"derived_curated",
+    # out_of_scope: 概念/オントロジー識別子 (指標対象外)
+    "clo":"out_of_scope","hp_phenotype":"out_of_scope","meddra":"out_of_scope",
+    "mondo":"out_of_scope","nando":"out_of_scope","ncit_disease":"out_of_scope",
+    "ncit_tissue":"out_of_scope",
 }
 CLASS_ORDER = ["deposited_research_record","deposited_entity_registry",
                "curated_entity_registry","derived_curated","out_of_scope"]
