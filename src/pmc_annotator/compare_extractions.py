@@ -39,15 +39,25 @@ def load_reconciliation(path):
                   'registry_deprecated', 'registry_identifiers_org_uri', 'review_note']]
 
 
-def passage_previews(plan_path):
+def passage_previews(plan_path, include_tables_text=False):
     """Returns (previews, all_doc_ids). all_doc_ids is every doc_id in the plan
     (not just ones with a hit on either side) -- used by document_level() so
     papers with zero accessions on both sides still get a 0/0/0 row instead
-    of silently disappearing from by_document.tsv."""
+    of silently disappearing from by_document.tsv.
+
+    include_tables_text MUST match whatever the extraction/normalize steps
+    used (phase_regex_togoid.py / epmc_annotations.py --include-tables-text,
+    on by default in run_extraction_compare.py). Passage indices are only
+    comparable when the same JATSParser settings produced them -- with it
+    left at the JATSParser default (off) while extraction ran with tables
+    included, every table-sourced match silently gets no preview at all
+    (its passage_idx doesn't exist in this doc's non-table passage list),
+    even though the match itself is correct."""
     if not plan_path:
         return {}, set()
     plan = json.loads(Path(plan_path).read_text())
-    parser, previews, all_doc_ids = JATSParser(), {}, set()
+    parser = JATSParser(include_captions=True, include_tables_text=include_tables_text)
+    previews, all_doc_ids = {}, set()
     for shard in plan['shards']:
         for filename in shard['files']:
             doc = parser.parse(Path(filename))
@@ -138,9 +148,9 @@ def document_level(result, out, all_doc_ids=None):
     return counts, hist_df
 
 
-def compare(left, right, out, plan_path=None, reconciliation_path=None):
+def compare(left, right, out, plan_path=None, reconciliation_path=None, include_tables_text=False):
     keys = ['doc_id', 'db', 'surface']
-    previews, all_doc_ids = passage_previews(plan_path)
+    previews, all_doc_ids = passage_previews(plan_path, include_tables_text)
     result = occurrence_details(left, 'togoid', previews).merge(
         occurrence_details(right, 'epmc', previews), on=keys, how='outer', indicator=True)
     result['membership'] = result.pop('_merge').astype(str).replace(
@@ -187,6 +197,10 @@ def main():
     ap.add_argument('--epmc', required=True)
     ap.add_argument('--output', required=True)
     ap.add_argument('--plan', help='Optional shard plan for local XML passage previews')
+    ap.add_argument('--include-tables-text', action='store_true',
+                     help='MUST match the --include-tables-text setting used for extraction/'
+                          'normalize (on by default in run_extraction_compare.py), or every '
+                          'table-sourced match silently gets no passage preview')
     ap.add_argument('--reconciliation',
                      help='Optional namespace_reconciliation.tsv (from reconcile_namespaces.py); '
                           'joined onto compare output by dataset key for registry name/URI/status')
@@ -195,7 +209,7 @@ def main():
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     if args.command == 'compare':
-        compare(left, right, out, args.plan, args.reconciliation)
+        compare(left, right, out, args.plan, args.reconciliation, args.include_tables_text)
     else:
         merge(left, right, out)
 

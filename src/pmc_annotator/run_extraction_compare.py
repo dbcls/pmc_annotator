@@ -280,6 +280,8 @@ def main():
     compare_cmd = [PY, '-m', 'pmc_annotator.compare_extractions', 'compare',
                    '--togoid', str(togoid_compare_dir), '--epmc', str(epmc_normalized),
                    '--output', str(comparison_dir), '--plan', str(plan_path)]
+    if include_tables:
+        compare_cmd.append('--include-tables-text')
     if args.reconciliation:
         compare_cmd += ['--reconciliation', args.reconciliation]
     run(compare_cmd, 'Compare TogoID vs Europe PMC')
