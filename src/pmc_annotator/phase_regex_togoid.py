@@ -26,7 +26,9 @@ def process_shard_togoid(shard_entry, output_dir_str, yaml_path_str, include_tab
         return {"shard_id": shard_id, "status": "skipped", "n_acc": 0}
 
     parser = JATSParser(include_captions=True, include_tables_text=include_tables_text)
-    ann = TogoIDAnnotator(yaml_path_str)  # YAMLは各プロセスで1回ロード
+    # YAMLは各プロセスで1回ロード。use_context_layer=True で context_required層
+    # (pdb, uniprot: 近傍キーワードがある場合のみ抽出) も有効化する。
+    ann = TogoIDAnnotator(yaml_path_str, use_context_layer=True)
 
     rows = []
     n_docs = 0

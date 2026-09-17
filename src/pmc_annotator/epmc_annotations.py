@@ -154,7 +154,7 @@ def dynamic_dataset(exact, namespace, annotator):
     if not namespace:
         return None
     candidates = {
-        hit.db for hit in annotator.annotate_text(exact)
+        hit.db for hit in annotator.annotate_text(exact, require_context=False)
         if hit.surface == exact
     }
     namespace_key = re.sub(r'[^a-z0-9]', '', namespace.lower())
@@ -241,8 +241,15 @@ def normalize(args):
     include_tables = getattr(args, 'include_tables_text', False)
     docs = {doc.id: (sid, doc) for sid, doc in documents(args.plan, include_tables_text=include_tables)}
     config, rules = mapping_rules(args.mapping)
+    # use_context_layer=True so context_required dbs (pdb, uniprot) are loaded
+    # into the pattern catalogue for classification; dynamic_dataset() calls
+    # annotate_text(..., require_context=False) since Europe PMC has already
+    # confirmed the surface is a real accession -- the keyword-window gate is
+    # only needed when scanning free text for candidates, not when classifying
+    # an already-confirmed one.
     annotator = TogoIDAnnotator(getattr(
-        args, 'patterns', Path(__file__).parent / 'data/togoid_extract_patterns.yaml'))
+        args, 'patterns', Path(__file__).parent / 'data/togoid_extract_patterns.yaml'),
+        use_context_layer=True)
     rows, external, rejected, conflicts, coverage = [], [], [], [], []
     for path in sorted(Path(args.raw).glob('*.json')):
         record = json.loads(path.read_text())

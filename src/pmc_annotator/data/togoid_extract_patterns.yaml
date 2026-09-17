@@ -1,4 +1,9 @@
-context_required: {}
+context_required:
+  uniprot:
+    category: Protein
+    orig_regex: ^(?:(?<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+)?)|(?<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)?)(?:\.\d+)?)$
+    pattern: \b(?P<id>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+)?|[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)?(?:\.\d+)?)\b
+    uri: http://identifiers.org/uniprot/
 excluded:
   atc:
     category: Drug
@@ -93,10 +98,6 @@ excluded:
     category: Organism
     orig_regex: ^(?<id>\d+)$
     uri: http://identifiers.org/taxonomy/
-  uniprot:
-    category: Protein
-    orig_regex: ^(?:(?<id1>[A-NR-Z][0-9](?:[A-Z][A-Z0-9][A-Z0-9][0-9]){1,2}(?:-\d+)?)|(?<id2>[OPQ][0-9][A-Z0-9][A-Z0-9][A-Z0-9][0-9](?:-\d+)?)(?:\.\d+)?)$
-    uri: http://identifiers.org/uniprot/
   uniprot_mnemonic:
     category: Protein
     orig_regex: ^(?<id>[A-Z0-9]+_[A-Z0-9]{0,5})$

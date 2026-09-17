@@ -29,12 +29,32 @@ class TogoHit:
     existence_layer: str | None = None    # "layer1_sparql" | "layer2_alliance" | None
 
 
-# context_required 層のDBに使う近傍キーワード (DB種別ごと)
+# context_required 層のDBに使う近傍キーワード (DB種別ごと)。
+# "deposited" は汎用的すぎる (GenBank等への寄託全般に使われる)ため意図的に除外。
 _CONTEXT_KEYWORDS = {
     "pdb": ("pdb", "protein data bank", "rcsb", "pdb id", "pdb code",
-            "pdb entry", "crystal structure", "deposited"),
+            "pdb entry", "crystal structure"),
+    "uniprot": ("uniprot", "swiss-prot", "swissprot", "trembl", "uniprotkb",
+                "sptrembl", "sprot", "protein id", "accession no",
+                "accession number", "accession:"),
 }
 _CONTEXT_WINDOW = 80
+
+
+def _kw_regex(kw):
+    """単語境界付き正規表現化。ただしキーワードが記号 ("accession:" 等) で
+    始まる/終わる場合、その側の \\b は単語/非単語の切り替えを要求できず
+    常に不一致になるため、その側の境界は付けない。"""
+    lead = r'\b' if kw[0].isalnum() else ''
+    trail = r'\b' if kw[-1].isalnum() else ''
+    return re.compile(lead + re.escape(kw) + trail)
+
+
+# 生文字列の部分一致 ("pdb" in "sbpdbpwaist") を避けるため単語境界付き正規表現化。
+_CONTEXT_KEYWORD_RE = {
+    db: [_kw_regex(kw) for kw in kws]
+    for db, kws in _CONTEXT_KEYWORDS.items()
+}
 
 
 class TogoIDAnnotator:
@@ -75,7 +95,7 @@ class TogoIDAnnotator:
                     rx = re.compile(pat_str)
                 except re.error:
                     continue
-                kws = _CONTEXT_KEYWORDS.get(db)
+                kws = _CONTEXT_KEYWORD_RE.get(db)
                 if not kws:
                     continue
                 self._patterns.append((
@@ -87,11 +107,11 @@ class TogoIDAnnotator:
               f"(context_layer={self.use_context_layer})")
 
     @staticmethod
-    def _has_context(text, start, end, keywords):
+    def _has_context(text, start, end, keyword_patterns):
         lo = max(0, start - _CONTEXT_WINDOW)
         hi = min(len(text), end + _CONTEXT_WINDOW)
         window = text[lo:hi].lower()
-        return any(kw in window for kw in keywords)
+        return any(kw_re.search(window) for kw_re in keyword_patterns)
 
     def _make_curie(self, db, surface, uri):
         """抽出IDをCURIE化。TogoID変換は別途 togoid_convertId で行う想定。"""
@@ -100,14 +120,20 @@ class TogoIDAnnotator:
         curie = (uri + local) if uri else ident
         return ident, curie
 
-    def annotate_text(self, text: str):
-        """1つの passage.text から TogoID識別子を抽出。TogoHitのリストを返す。"""
+    def annotate_text(self, text: str, require_context: bool = True):
+        """1つの passage.text から TogoID識別子を抽出。TogoHitのリストを返す。
+
+        require_context=False は、EuropePMC側が既に実在性を検証済みの
+        単一accession文字列 (前後文脈を持たない) をdbキーへ分類する用途向け
+        (epmc_annotations.dynamic_dataset)。context_required層のkeyword
+        ゲートを素通しし、パターン形状のみでdbを判定する。
+        """
         hits = []
         for db, category, rx, uri, conf, kws in self._patterns:
             for m in rx.finditer(text):
                 surface = m.group(0)
                 start, end = m.start(), m.end()
-                if conf == "context":
+                if conf == "context" and require_context:
                     if not (kws and self._has_context(text, start, end, kws)):
                         continue
                 ident, curie = self._make_curie(db, surface, uri)
