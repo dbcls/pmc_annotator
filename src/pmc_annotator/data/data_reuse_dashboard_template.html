@@ -45,18 +45,33 @@ html, body { margin: 0; padding: 0; min-height: 100%; background: #fcfcfb; color
 .viz-root { background: var(--surface-0); color: var(--text-primary); font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 .viz-root * { box-sizing: border-box; }
 .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
-h1 { font-size: 20px; font-weight: 650; margin: 0 0 4px; }
+h1 {
+  font-size: 22px; font-weight: 750; margin: 0 0 4px;
+  background: linear-gradient(90deg, var(--series-1), var(--series-3) 55%, var(--series-4));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  display: inline-block;
+}
 .subtitle { color: var(--text-secondary); font-size: 13px; margin: 0 0 8px; }
-.caveat { font-size: 12px; color: var(--text-secondary); background: var(--surface-2); border-radius: 8px; padding: 8px 12px; margin: 0 0 24px; }
+.caveat { font-size: 12px; color: var(--text-secondary); background: var(--surface-2); border-left: 3px solid var(--series-4); border-radius: 8px; padding: 8px 12px; margin: 0 0 24px; }
 
 .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 20px; }
-.kpi { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.kpi {
+  background: var(--surface-1); border: 1px solid var(--border); border-top: 3px solid var(--kpi-c, var(--series-1));
+  border-radius: 10px; padding: 14px 16px;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.10); }
+.kpi:nth-of-type(1) { --kpi-c: var(--series-1); }
+.kpi:nth-of-type(2) { --kpi-c: var(--series-3); }
+.kpi:nth-of-type(3) { --kpi-c: var(--series-2); }
+.kpi:nth-of-type(4) { --kpi-c: var(--series-4); }
+.kpi:nth-of-type(5) { --kpi-c: var(--series-5); }
 .kpi .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
-.kpi .value { font-size: 24px; font-weight: 650; font-variant-numeric: proportional-nums; }
+.kpi .value { font-size: 25px; font-weight: 700; font-variant-numeric: proportional-nums; color: var(--kpi-c, var(--text-primary)); }
 .kpi .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
 
 .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px 18px; margin-bottom: 20px; }
-.card h2 { font-size: 15px; font-weight: 650; margin: 0 0 2px; }
+.card h2 { font-size: 15px; font-weight: 700; margin: 0 0 2px; padding-left: 12px; border-left: 4px solid var(--series-1); }
 .card .desc { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 16px; max-width: 760px; }
 
 .placeholder-card { border-style: dashed; }
@@ -75,18 +90,20 @@ table.datatable tbody tr:hover { background: var(--surface-2); }
 table.datatable tbody tr.db-row { cursor: pointer; }
 
 .usage-tree { font-size: 12.5px; }
-.tree-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.tree-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-bottom: 1px solid var(--border); border-left: 3px solid transparent; }
 .tree-row:hover { background: var(--surface-2); }
-.tree-row.level-2 { padding-left: 30px; }
-.tree-row.level-3 { padding-left: 54px; }
+.tree-row.level-1 { border-left-color: var(--series-1); background: color-mix(in srgb, var(--series-1) 6%, transparent); }
+.tree-row.level-2 { padding-left: 30px; border-left-color: var(--series-3); }
+.tree-row.level-3 { padding-left: 54px; border-left-color: var(--series-5); }
 .tree-toggle { flex: none; width: 16px; text-align: center; cursor: pointer; color: var(--text-muted); user-select: none; font-family: monospace; }
 .tree-toggle.leaf { visibility: hidden; }
 .tree-label { flex: 1; min-width: 0; cursor: pointer; color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-row.level-1 .tree-label { font-weight: 650; }
 .tree-label:hover { text-decoration-color: var(--text-primary); }
 .tree-counts { flex: none; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tree-children[hidden] { display: none; }
 .tree-loadmore { padding: 6px 8px 6px 54px; }
-.tree-loadmore button, .tree-viewall { background: none; border: none; color: var(--series-1); font-size: 11.5px; cursor: pointer; padding: 0; }
+.tree-loadmore button, .tree-viewall { background: none; border: none; color: var(--series-1); font-size: 11.5px; cursor: pointer; padding: 0; font-weight: 600; }
 .tree-loadmore button:hover, .tree-viewall:hover { text-decoration: underline; }
 .table-scroll { max-height: 420px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
 .table-scroll table.datatable { min-width: 640px; }
@@ -111,21 +128,40 @@ tr.evidence-row:hover { background: none; }
 .cross-table td.cell .fill { position: absolute; inset: 2px; border-radius: 4px; background: var(--series-1); opacity: 0; z-index: 0; }
 .cross-table td.cell .val { position: relative; z-index: 1; }
 
-.page-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
-.page-tabs button { border: none; background: none; color: var(--text-secondary); font-size: 14px; font-weight: 600; padding: 10px 16px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-.page-tabs button:hover { color: var(--text-primary); }
-.page-tabs button.active { color: var(--series-1); border-bottom-color: var(--series-1); }
+.page-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--border); margin-bottom: 22px; padding-bottom: 8px; }
+.page-tabs button {
+  border: 1px solid transparent; background: none; color: var(--text-secondary);
+  font-size: 13.5px; font-weight: 600; padding: 8px 14px; cursor: pointer;
+  border-radius: 999px; transition: background .12s ease, color .12s ease, border-color .12s ease;
+}
+.page-tabs button:hover { color: var(--text-primary); background: var(--surface-2); }
+.page-tabs button.active {
+  color: #fff; background: var(--series-1); border-color: var(--series-1);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--series-1) 45%, transparent);
+}
 
 .qa-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
 .mini-heading { font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); margin: 0 0 10px; }
 .mini-bar-row { display: grid; grid-template-columns: 120px 1fr 50px; align-items: center; gap: 8px; font-size: 12.5px; margin-bottom: 6px; }
 .mini-bar-row .mb-label { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mini-bar-track { background: var(--surface-2); border-radius: 4px; height: 10px; overflow: hidden; }
-.mini-bar-fill { background: var(--series-1); height: 100%; border-radius: 4px; }
+.mini-bar-fill { background: var(--mb-c, var(--series-1)); height: 100%; border-radius: 4px; }
 .mini-bar-row .mb-value { text-align: right; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
-.load-more-btn { background: none; border: 1px dashed var(--border); border-radius: 6px; padding: 4px 10px; font-size: 11.5px; color: var(--text-secondary); cursor: pointer; margin-top: 4px; width: 100%; }
-.load-more-btn:hover { background: var(--surface-2); color: var(--text-primary); }
+.load-more-btn {
+  background: color-mix(in srgb, var(--series-1) 8%, var(--surface-1));
+  border: 1px solid color-mix(in srgb, var(--series-1) 35%, var(--border));
+  border-radius: 6px; padding: 5px 10px; font-size: 11.5px; font-weight: 600;
+  color: var(--series-1); cursor: pointer; margin-top: 4px; width: 100%;
+  transition: background .12s ease;
+}
+.load-more-btn:hover { background: color-mix(in srgb, var(--series-1) 16%, var(--surface-1)); }
+
+.class-badge {
+  display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 650;
+  color: var(--badge-c, var(--series-1));
+  background: color-mix(in srgb, var(--badge-c, var(--series-1)) 16%, transparent);
+}
 
 .facet-grid { display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: start; }
 @media (max-width: 720px) { .facet-grid { grid-template-columns: 1fr; } }
@@ -141,8 +177,13 @@ tr.evidence-row:hover { background: none; }
 .facet-option input { accent-color: var(--series-1); flex: none; }
 .facet-option .fo-count { color: var(--text-muted); font-variant-numeric: tabular-nums; flex: none; }
 .facet-option.selected .fo-label span.name { font-weight: 600; color: var(--text-primary); }
-.clear-facets-btn { background: var(--surface-0); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 12px; color: var(--text-primary); cursor: pointer; align-self: flex-start; }
-.clear-facets-btn:hover { background: var(--surface-2); }
+.clear-facets-btn {
+  background: color-mix(in srgb, var(--series-2) 10%, var(--surface-0));
+  border: 1px solid color-mix(in srgb, var(--series-2) 45%, var(--border));
+  border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 600;
+  color: var(--series-2); cursor: pointer; align-self: flex-start; transition: background .12s ease;
+}
+.clear-facets-btn:hover { background: color-mix(in srgb, var(--series-2) 20%, var(--surface-0)); }
 
 .table-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 12px; flex-wrap: wrap; }
 .search-input { background: var(--surface-0); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12.5px; color: var(--text-primary); width: 220px; }
@@ -329,6 +370,18 @@ const CLASS_LABEL = {
   derived_curated: 'derived / curated',
   out_of_scope: 'out of scope',
 };
+const CLASS_COLOR = {
+  deposited_research_record: 'var(--series-1)',
+  deposited_entity_registry: 'var(--series-3)',
+  curated_entity_registry: 'var(--series-4)',
+  derived_curated: 'var(--series-5)',
+  out_of_scope: 'var(--text-muted)',
+};
+function classBadge(cls) {
+  const label = CLASS_LABEL[cls] || cls;
+  const color = CLASS_COLOR[cls] || 'var(--series-1)';
+  return `<span class="class-badge" style="--badge-c:${color}">${label}</span>`;
+}
 
 const tooltip = document.getElementById('tooltip');
 function showTip(x, y, html) {
@@ -402,7 +455,8 @@ function hideTip() { tooltip.style.display = 'none'; }
 
   const thead = document.createElement('thead');
   const htr = document.createElement('tr');
-  htr.innerHTML = '<th>data type</th>' + classes.map(c => `<th>${CLASS_LABEL[c] || c}</th>`).join('');
+  htr.innerHTML = '<th>data type</th>' + classes.map(c =>
+    `<th style="border-bottom:3px solid ${CLASS_COLOR[c] || 'var(--series-1)'}">${CLASS_LABEL[c] || c}</th>`).join('');
   thead.appendChild(htr);
   table.appendChild(thead);
 
@@ -413,7 +467,8 @@ function hideTip() { tooltip.style.display = 'none'; }
     classes.forEach(c => {
       const v = DATA.cross_pivot[dt][c] || 0;
       const pct = v / maxCell;
-      html += `<td class="cell"><div class="fill" style="opacity:${(pct * 0.35).toFixed(2)}"></div><span class="val">${v ? fmt(v) : '-'}</span></td>`;
+      const cc = CLASS_COLOR[c] || 'var(--series-1)';
+      html += `<td class="cell"><div class="fill" style="opacity:${(pct * 0.4).toFixed(2)};background:${cc}"></div><span class="val">${v ? fmt(v) : '-'}</span></td>`;
     });
     tr.innerHTML = html;
     tbody.appendChild(tr);
@@ -544,14 +599,16 @@ function hideTip() { tooltip.style.display = 'none'; }
 
 // ---------- Explore: facets + table ----------
 // ---------- QA summary bars (mini horizontal bar lists) ----------
+const MB_COLORS = ['var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--series-4)', 'var(--series-5)'];
 function renderMiniBars(containerId, records, valueKey, labelKey) {
   const el = document.getElementById(containerId);
   const max = Math.max(...records.map(r => r[valueKey]), 1);
-  el.innerHTML = records.map(r => {
+  el.innerHTML = records.map((r, i) => {
     const pct = Math.round(100 * r[valueKey] / max);
+    const c = MB_COLORS[i % MB_COLORS.length];
     return `<div class="mini-bar-row">
       <span class="mb-label">${r[labelKey]}</span>
-      <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%"></div></div>
+      <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;--mb-c:${c}"></div></div>
       <span class="mb-value">${fmt(r[valueKey])}</span>
     </div>`;
   }).join('');
@@ -692,7 +749,7 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
       const evKey = `${r.doc_id}||${r.db}||${r.id}`;
       const ev = DATA.evidence[evKey];
       let html = `<td><a class="doc-link" href="${pmcUrl(r.doc_id)}" target="_blank" rel="noopener">${r.doc_id}</a></td>` +
-        `<td>${accCell}${ev ? ' <span class="ev-hint">&#128269;</span>' : ''}</td><td>${CLASS_LABEL[r.class] || r.class}</td><td>${r.data_type}</td>` +
+        `<td>${accCell}${ev ? ' <span class="ev-hint">&#128269;</span>' : ''}</td><td>${classBadge(r.class)}</td><td>${r.data_type}</td>` +
         `<td>${r.section}</td>`;
       if (CURRENT_VIEW === 'qa') html += `<td>${r.oracle}</td><td>${r.confidence}</td>`;
       html += `<td>${fmt(r.n_in_doc)}</td>`;
