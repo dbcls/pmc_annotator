@@ -169,8 +169,7 @@ tr.evidence-row:hover { background: none; }
     <button data-page="crosstab">Credit &times; data type</button>
     <button data-page="bydb">By database</button>
     <button data-page="reused">Most reused</button>
-    <button data-page="explore-public">Explore (public)</button>
-    <button data-page="explore-qa">Explore (internal QA)</button>
+    <button data-page="explore-public">Explore</button>
     <button data-page="qasummary">QA summary</button>
   </div>
 
@@ -803,14 +802,17 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
   renderTable();
 })();
 
-// ---------- Page-level tabs: Dashboard / Credit x data type / Most reused / Explore (public|qa) ----------
+// ---------- Page-level tabs: Dashboard / Credit x data type / Most reused / Explore ----------
 // Each tab shows exactly one <section class="page">, the rest hidden -- real
 // navigation between separate pages, not a single continuously-scrolling one.
+// Explore (internal QA) is removed from the UI for now, but CURRENT_VIEW/'qa'
+// plumbing in the Explore module is left dormant in case it's needed again --
+// just nothing currently sets CURRENT_VIEW to 'qa'.
 (function renderPageTabs() {
   const tabButtons = [...document.getElementById('pageTabs').querySelectorAll('button')];
   const pageIds = { home: 'page-home', role: 'page-role', crosstab: 'page-crosstab',
                     bydb: 'page-bydb', reused: 'page-reused',
-                    'explore-public': 'page-explore', 'explore-qa': 'page-explore',
+                    'explore-public': 'page-explore',
                     qasummary: 'page-qasummary' };
   const allSections = [...new Set(Object.values(pageIds))].map(id => document.getElementById(id));
 
@@ -819,8 +821,8 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
     document.getElementById(pageIds[pageKey]).hidden = false;
     tabButtons.forEach(b => b.classList.toggle('active', b.dataset.page === pageKey));
     Nav.currentPage = pageKey;
-    if (pageKey === 'explore-public' || pageKey === 'explore-qa') {
-      CURRENT_VIEW = pageKey === 'explore-qa' ? 'qa' : 'public';
+    if (pageKey === 'explore-public') {
+      CURRENT_VIEW = 'public';
       window.Explore.refresh();
     }
     Nav.commit();
