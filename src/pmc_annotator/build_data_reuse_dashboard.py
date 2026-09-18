@@ -174,16 +174,32 @@ def build_payload(usage_long_path, patterns_path=None, run_label=None, windows_p
     by_confidence = (df.groupby('confidence').size().rename('n_links').reset_index()
                      .sort_values('n_links', ascending=False))
 
+    n_out_of_scope_excluded = len(df) - n_links
+    evidence = _load_evidence(windows_path) if windows_path and Path(windows_path).exists() else {}
+
+    # Framing 1's (paper, accession) atom also needs to show *which
+    # section* it's in (methods / results / abstract / ...) -- pull that
+    # straight from the same evidence lookup used for the drill-down card,
+    # so it's a real column/facet on the atom row, not only visible after
+    # expanding evidence. Rows with no matched mention (no build_windows
+    # alignment) fall back to '(unknown)', shown and filterable as such
+    # rather than silently blank.
+    def _section_for(row):
+        key = f"{row['doc_id']}||{row['dataset']}||{row['norm_id']}"
+        return evidence.get(key, {}).get('section_type') or '(unknown)'
+    df['section'] = df.apply(_section_for, axis=1) if evidence else '(unknown)'
+
+    by_section = (df.groupby('section').agg(
+        n_papers=('doc_id', 'nunique'), n_links=('curie', 'size')
+    ).reset_index().sort_values('n_links', ascending=False))
+
     # rows drops the per-db 'uri' (repeated ~20k times) in favor of a small
     # db -> uri lookup the page joins client-side -- meaningfully smaller
     # payload for the same data.
     rows = df[['doc_id', 'dataset', 'norm_id', 'curie', 'class', 'data_type',
-              'oracle', 'confidence', 'n_in_doc']].rename(
+              'section', 'oracle', 'confidence', 'n_in_doc']].rename(
         columns={'dataset': 'db', 'norm_id': 'id'})
     db_uri = {db: m['uri'] for db, m in db_meta.items() if m.get('uri')}
-
-    n_out_of_scope_excluded = len(df) - n_links
-    evidence = _load_evidence(windows_path) if windows_path and Path(windows_path).exists() else {}
 
     return {
         'run_label': run_label or '',
@@ -200,6 +216,7 @@ def build_payload(usage_long_path, patterns_path=None, run_label=None, windows_p
         'by_class': by_class.to_dict(orient='records'),
         'by_data_type': by_data_type.to_dict(orient='records'),
         'by_db': by_db.to_dict(orient='records'),
+        'by_section': by_section.to_dict(orient='records'),
         'by_oracle': by_oracle.to_dict(orient='records'),
         'by_confidence': by_confidence.to_dict(orient='records'),
         'db_uri': db_uri,

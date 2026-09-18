@@ -73,7 +73,8 @@ table.datatable th:first-child, table.datatable td:first-child { text-align: lef
 table.datatable th { color: var(--text-secondary); font-weight: 600; position: sticky; top: 0; background: var(--surface-1); }
 table.datatable tbody tr:hover { background: var(--surface-2); }
 table.datatable tbody tr.db-row { cursor: pointer; }
-.table-scroll { max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+.table-scroll { max-height: 420px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+.table-scroll table.datatable { min-width: 640px; }
 .doc-link, .acc-link { color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px; }
 .doc-link:hover, .acc-link:hover { text-decoration-color: var(--text-primary); }
 
@@ -267,6 +268,7 @@ tr.evidence-row:hover { background: none; }
                   <th data-key="curie" style="text-align:left">accession</th>
                   <th data-key="class" style="text-align:left">credit class</th>
                   <th data-key="data_type" style="text-align:left">data type</th>
+                  <th data-key="section" style="text-align:left">section</th>
                 <th data-key="n_in_doc">occurrences</th>
               </tr>
             </thead>
@@ -447,12 +449,13 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
 (function renderExplore() {
   const rows = DATA.rows;
   let sortKey = 'n_in_doc', sortDir = -1;
-  const selections = { class: new Set(), data_type: new Set(), db: new Set(), oracle: new Set(), confidence: new Set() };
+  const selections = { class: new Set(), data_type: new Set(), db: new Set(), section: new Set(), oracle: new Set(), confidence: new Set() };
   const expanded = new Set(); // facet keys currently showing all options
   const facetDefs = {
     class: { label: 'Credit class', labelFn: v => CLASS_LABEL[v] || v },
     data_type: { label: 'Data type' },
     db: { label: 'Database' },
+    section: { label: 'Section' },
   };
   const qaFacetDefs = {
     oracle: { label: 'Verification route (oracle)' },
@@ -571,7 +574,8 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
       const evKey = `${r.doc_id}||${r.db}||${r.id}`;
       const ev = DATA.evidence[evKey];
       let html = `<td><a class="doc-link" href="${pmcUrl(r.doc_id)}" target="_blank" rel="noopener">${r.doc_id}</a></td>` +
-        `<td>${accCell}${ev ? ' <span class="ev-hint">&#128269;</span>' : ''}</td><td>${CLASS_LABEL[r.class] || r.class}</td><td>${r.data_type}</td>`;
+        `<td>${accCell}${ev ? ' <span class="ev-hint">&#128269;</span>' : ''}</td><td>${CLASS_LABEL[r.class] || r.class}</td><td>${r.data_type}</td>` +
+        `<td>${r.section}</td>`;
       if (CURRENT_VIEW === 'qa') html += `<td>${r.oracle}</td><td>${r.confidence}</td>`;
       html += `<td>${fmt(r.n_in_doc)}</td>`;
       const tr = document.createElement('tr');
@@ -587,7 +591,7 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
           detail.className = 'evidence-row';
           const occNote = ev.n_occurrences > 1 ? `${fmt(ev.n_occurrences)} occurrences in this paper (showing one representative excerpt)` : '1 occurrence in this paper';
           const alignNote = ev.align_ok ? '' : ' <span class="ev-caveat">-- extracted from a table/list context, alignment approximate</span>';
-          detail.innerHTML = `<td colspan="${5 + extraCols}"><div class="evidence-card">` +
+          detail.innerHTML = `<td colspan="${6 + extraCols}"><div class="evidence-card">` +
             `<div class="evidence-meta">${ev.section_type || 'section unknown'} &middot; ${occNote}${alignNote}</div>` +
             `<div class="evidence-text">${renderEvidenceHtml(ev.window_text)}</div>` +
             `</div></td>`;
@@ -596,7 +600,7 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
       }
       tbody.appendChild(tr);
     });
-    const totalCols = 5 + extraCols;
+    const totalCols = 6 + extraCols;
     if (filtered.length === 0) {
       tbody.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--text-muted)">no rows match</td></tr>`;
     } else if (filtered.length > MAX_ROWS) {
@@ -610,6 +614,7 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
     const baseCols = [
       ['doc_id', 'PMC', true], ['curie', 'accession', true],
       ['class', 'credit class', true], ['data_type', 'data type', true],
+      ['section', 'section', true],
     ];
     const qaCols = [['oracle', 'oracle', true], ['confidence', 'confidence', true]];
     const cols = CURRENT_VIEW === 'qa' ? [...baseCols, ...qaCols, ['n_in_doc', 'occurrences', false]]
