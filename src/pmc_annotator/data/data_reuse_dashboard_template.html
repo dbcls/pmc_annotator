@@ -72,6 +72,7 @@ table.datatable th, table.datatable td { text-align: right; padding: 6px 10px; b
 table.datatable th:first-child, table.datatable td:first-child { text-align: left; font-variant-numeric: normal; }
 table.datatable th { color: var(--text-secondary); font-weight: 600; position: sticky; top: 0; background: var(--surface-1); }
 table.datatable tbody tr:hover { background: var(--surface-2); }
+table.datatable tbody tr.db-row { cursor: pointer; }
 .table-scroll { max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
 .doc-link, .acc-link { color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px; }
 .doc-link:hover, .acc-link:hover { text-decoration-color: var(--text-primary); }
@@ -148,10 +149,13 @@ tr.evidence-row:hover { background: none; }
 
   <div class="page-tabs" id="pageTabs">
     <button data-page="home" class="active">Dashboard</button>
+    <button data-page="role">Role &times; year</button>
     <button data-page="crosstab">Credit &times; data type</button>
+    <button data-page="bydb">By database</button>
     <button data-page="reused">Most reused</button>
     <button data-page="explore-public">Explore (public)</button>
     <button data-page="explore-qa">Explore (internal QA)</button>
+    <button data-page="qasummary">QA summary</button>
   </div>
 
   <section id="page-home" class="page">
@@ -171,10 +175,12 @@ tr.evidence-row:hover { background: none; }
       <div id="reusedPreview"></div>
       <button class="load-more-btn" data-goto="reused">View full list &rarr;</button>
     </div>
+  </section>
 
+  <section id="page-role" class="page" hidden>
     <div class="card placeholder-card">
       <h2>Created vs. used over time</h2>
-      <p class="desc">The design's primary headline -- role assigned per (paper, accession), trended by publication year.</p>
+      <p class="desc">The design's primary headline (Decision 2 / Suggestion) -- role assigned per (paper, accession), trended by publication year.</p>
       <div class="placeholder-body">
         <div class="placeholder-icon">&#9203;</div>
         <div class="placeholder-text">
@@ -198,6 +204,19 @@ tr.evidence-row:hover { background: none; }
     </div>
   </section>
 
+  <section id="page-bydb" class="page" hidden>
+    <div class="card">
+      <h2>By database</h2>
+      <p class="desc">Every database, with its papers / distinct accessions / links. Click a row to jump to Explore filtered to that database.</p>
+      <div class="table-scroll" style="max-height: 480px;">
+        <table class="datatable" id="byDbTable">
+          <thead><tr><th style="text-align:left">database</th><th style="text-align:left">data type</th><th>papers</th><th>distinct accessions</th><th>links</th></tr></thead>
+          <tbody id="byDbTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section id="page-reused" class="page" hidden>
     <div class="card">
       <h2>Most-reused datasets</h2>
@@ -212,10 +231,10 @@ tr.evidence-row:hover { background: none; }
     </div>
   </section>
 
-  <section id="page-explore" class="page" hidden>
-    <div class="card" id="qaSummaryCard" data-qa-only hidden>
+  <section id="page-qasummary" class="page" hidden>
+    <div class="card">
       <h2>QA summary</h2>
-      <p class="desc">Verification route and extraction-confidence breakdown across all confirmed links -- hidden from the public view.</p>
+      <p class="desc">Verification route and extraction-confidence breakdown across all confirmed links (Decision 8's internal-QA content) -- not shown to public-view users.</p>
       <div class="qa-summary-grid">
         <div>
           <h3 class="mini-heading">Verification route (oracle)</h3>
@@ -227,7 +246,9 @@ tr.evidence-row:hover { background: none; }
         </div>
       </div>
     </div>
+  </section>
 
+  <section id="page-explore" class="page" hidden>
     <div class="card">
       <h2>Explore</h2>
       <p class="desc">Facets recompute dynamically as you select: AND across facets, OR within one facet (Decision 4-B). Counts shown are distinct papers under the current selection, computed live in your browser (no backend). Each group starts collapsed to its top options -- use "load more" for the rest. Rows marked <span class="ev-hint">&#128269;</span> have an evidence excerpt -- click to expand it (Decision 6).</p>
@@ -383,6 +404,22 @@ function hideTip() { tooltip.style.display = 'none'; }
       ? `<a class="acc-link" href="${url}" target="_blank" rel="noopener">${r.curie}</a>`
       : r.curie;
     tr.innerHTML = `<td>${accCell}</td><td>${r.dataset}</td><td>${fmt(r.n_papers)}</td>`;
+    tbody.appendChild(tr);
+  });
+})();
+
+// ---------- By database ----------
+(function renderByDb() {
+  const tbody = document.getElementById('byDbTableBody');
+  DATA.by_db.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = 'db-row';
+    tr.innerHTML = `<td>${r.dataset}</td><td>${r.data_type || ''}</td>` +
+      `<td>${fmt(r.n_papers)}</td><td>${fmt(r.n_accessions)}</td><td>${fmt(r.n_links)}</td>`;
+    tr.addEventListener('click', () => {
+      window.gotoPage('explore-public');
+      window.Explore.selectDb(r.dataset);
+    });
     tbody.appendChild(tr);
   });
 })();
@@ -593,7 +630,13 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
 
   // exposed so the page-level Public/QA tabs (outside this closure) can
   // re-render the Explore section when CURRENT_VIEW changes
-  window.Explore = { refresh() { renderHead(); renderFacets(); renderTable(); } };
+  window.Explore = {
+    refresh() { renderHead(); renderFacets(); renderTable(); },
+    selectDb(dbName) {
+      selections.db = new Set([dbName]);
+      renderFacets(); renderTable();
+    },
+  };
 
   renderHead();
   renderFacets();
@@ -604,10 +647,11 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
 // Each tab shows exactly one <section class="page">, the rest hidden -- real
 // navigation between separate pages, not a single continuously-scrolling one.
 (function renderPageTabs() {
-  const qaCard = document.getElementById('qaSummaryCard');
   const tabButtons = [...document.getElementById('pageTabs').querySelectorAll('button')];
-  const pageIds = { home: 'page-home', crosstab: 'page-crosstab', reused: 'page-reused',
-                    'explore-public': 'page-explore', 'explore-qa': 'page-explore' };
+  const pageIds = { home: 'page-home', role: 'page-role', crosstab: 'page-crosstab',
+                    bydb: 'page-bydb', reused: 'page-reused',
+                    'explore-public': 'page-explore', 'explore-qa': 'page-explore',
+                    qasummary: 'page-qasummary' };
   const allSections = [...new Set(Object.values(pageIds))].map(id => document.getElementById(id));
 
   function goTo(pageKey) {
@@ -616,10 +660,10 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
     tabButtons.forEach(b => b.classList.toggle('active', b.dataset.page === pageKey));
     if (pageKey === 'explore-public' || pageKey === 'explore-qa') {
       CURRENT_VIEW = pageKey === 'explore-qa' ? 'qa' : 'public';
-      qaCard.hidden = CURRENT_VIEW !== 'qa';
       window.Explore.refresh();
     }
   }
+  window.gotoPage = goTo;
 
   tabButtons.forEach(btn => btn.addEventListener('click', () => goTo(btn.dataset.page)));
   // home-page preview cards' "View full ... ->" buttons jump to the real tab

@@ -165,6 +165,7 @@ def build_payload(usage_long_path, patterns_path=None, run_label=None, windows_p
         n_links=('curie', 'size')).reset_index().sort_values('n_links', ascending=False))
 
     by_db = (df.groupby('dataset').agg(
+        data_type=('data_type', 'first'),
         n_papers=('doc_id', 'nunique'), n_accessions=('curie', 'nunique'),
         n_links=('curie', 'size')).reset_index().sort_values('n_links', ascending=False))
 
