@@ -169,6 +169,16 @@ def build_payload(usage_long_path, patterns_path=None, run_label=None, windows_p
         n_papers=('doc_id', 'nunique'), n_accessions=('curie', 'nunique'),
         n_links=('curie', 'size')).reset_index().sort_values('n_links', ascending=False))
 
+    # Leaf level of the data-type -> database -> accession drill-down tree
+    # (the "database usage" table): every accession's counts within its
+    # database. curie already encodes (dataset, norm_id) 1:1, so this is
+    # ~n_accessions rows, not a full cross-product -- fine to ship in full
+    # rather than capping like most_reused's top-30 does, since each
+    # database's accession list is only rendered on demand (expand click).
+    usage_tree_leaves = (df.groupby(['data_type', 'dataset', 'curie', 'norm_id'])
+                         .agg(n_papers=('doc_id', 'nunique'), n_links=('curie', 'size'))
+                         .reset_index().sort_values('n_papers', ascending=False))
+
     by_oracle = (df.groupby('oracle').size().rename('n_links').reset_index()
                  .sort_values('n_links', ascending=False))
     by_confidence = (df.groupby('confidence').size().rename('n_links').reset_index()
@@ -216,6 +226,7 @@ def build_payload(usage_long_path, patterns_path=None, run_label=None, windows_p
         'by_class': by_class.to_dict(orient='records'),
         'by_data_type': by_data_type.to_dict(orient='records'),
         'by_db': by_db.to_dict(orient='records'),
+        'usage_tree_leaves': usage_tree_leaves.drop(columns=['data_type']).to_dict(orient='records'),
         'by_section': by_section.to_dict(orient='records'),
         'by_oracle': by_oracle.to_dict(orient='records'),
         'by_confidence': by_confidence.to_dict(orient='records'),

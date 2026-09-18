@@ -73,6 +73,21 @@ table.datatable th:first-child, table.datatable td:first-child { text-align: lef
 table.datatable th { color: var(--text-secondary); font-weight: 600; position: sticky; top: 0; background: var(--surface-1); }
 table.datatable tbody tr:hover { background: var(--surface-2); }
 table.datatable tbody tr.db-row { cursor: pointer; }
+
+.usage-tree { font-size: 12.5px; }
+.tree-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.tree-row:hover { background: var(--surface-2); }
+.tree-row.level-2 { padding-left: 30px; }
+.tree-row.level-3 { padding-left: 54px; }
+.tree-toggle { flex: none; width: 16px; text-align: center; cursor: pointer; color: var(--text-muted); user-select: none; font-family: monospace; }
+.tree-toggle.leaf { visibility: hidden; }
+.tree-label { flex: 1; min-width: 0; cursor: pointer; color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-label:hover { text-decoration-color: var(--text-primary); }
+.tree-counts { flex: none; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tree-children[hidden] { display: none; }
+.tree-loadmore { padding: 6px 8px 6px 54px; }
+.tree-loadmore button, .tree-viewall { background: none; border: none; color: var(--series-1); font-size: 11.5px; cursor: pointer; padding: 0; }
+.tree-loadmore button:hover, .tree-viewall:hover { text-decoration: underline; }
 .table-scroll { max-height: 420px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
 .table-scroll table.datatable { min-width: 640px; }
 .doc-link, .acc-link { color: var(--text-primary); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 2px; }
@@ -207,13 +222,10 @@ tr.evidence-row:hover { background: none; }
 
   <section id="page-bydb" class="page" hidden>
     <div class="card">
-      <h2>By database</h2>
-      <p class="desc">Every database, with its papers / distinct accessions / links. Click a row to jump to Explore filtered to that database.</p>
-      <div class="table-scroll" style="max-height: 480px;">
-        <table class="datatable" id="byDbTable">
-          <thead><tr><th style="text-align:left">database</th><th style="text-align:left">data type</th><th>papers</th><th>distinct accessions</th><th>links</th></tr></thead>
-          <tbody id="byDbTableBody"></tbody>
-        </table>
+      <h2>Database usage</h2>
+      <p class="desc">Data type &rarr; database &rarr; accession, each level with its papers/links. Click the arrow to expand; click the name to jump to Explore filtered to it.</p>
+      <div class="table-scroll" style="max-height: 560px;">
+        <div id="usageTree" class="usage-tree"></div>
       </div>
     </div>
   </section>
@@ -410,19 +422,110 @@ function hideTip() { tooltip.style.display = 'none'; }
   });
 })();
 
-// ---------- By database ----------
-(function renderByDb() {
-  const tbody = document.getElementById('byDbTableBody');
-  DATA.by_db.forEach(r => {
-    const tr = document.createElement('tr');
-    tr.className = 'db-row';
-    tr.innerHTML = `<td>${r.dataset}</td><td>${r.data_type || ''}</td>` +
-      `<td>${fmt(r.n_papers)}</td><td>${fmt(r.n_accessions)}</td><td>${fmt(r.n_links)}</td>`;
-    tr.addEventListener('click', () => {
-      window.gotoPage('explore-public');
-      window.Explore.selectDb(r.dataset);
+// ---------- Database usage tree: data type -> database -> accession ----------
+(function renderUsageTree() {
+  const root = document.getElementById('usageTree');
+  const LEAF_PAGE = 20;
+
+  function countsLabel(r, extra) {
+    const parts = [`${fmt(r.n_papers)} papers`];
+    if ('n_accessions' in r) parts.push(`${fmt(r.n_accessions)} accessions`);
+    parts.push(`${fmt(r.n_links)} links`);
+    if (extra) parts.push(extra);
+    return parts.join(' \u00b7 ');
+  }
+
+  function makeRow(level, label, countsText, opts) {
+    const row = document.createElement('div');
+    row.className = `tree-row level-${level}`;
+    const toggle = document.createElement('span');
+    toggle.className = 'tree-toggle' + (opts.hasChildren ? '' : ' leaf');
+    toggle.textContent = opts.hasChildren ? '\u25b8' : '\u2022';
+    const labelEl = document.createElement('span');
+    labelEl.className = 'tree-label';
+    labelEl.textContent = label;
+    const countsEl = document.createElement('span');
+    countsEl.className = 'tree-counts';
+    countsEl.textContent = countsText;
+    row.append(toggle, labelEl, countsEl);
+    labelEl.addEventListener('click', opts.onNavigate);
+    if (opts.hasChildren) {
+      let built = false;
+      let childrenEl = null;
+      toggle.addEventListener('click', () => {
+        if (!built) {
+          childrenEl = opts.buildChildren();
+          childrenEl.hidden = false; // built visible -- first click expands, doesn't need a toggle-off
+          row.after(childrenEl);
+          built = true;
+        } else {
+          childrenEl.hidden = !childrenEl.hidden;
+        }
+        toggle.textContent = childrenEl.hidden ? '\u25b8' : '\u25be';
+      });
+    }
+    return row;
+  }
+
+  function buildLeafChildren(dbName) {
+    const wrap = document.createElement('div');
+    wrap.className = 'tree-children';
+    const all = DATA.usage_tree_leaves.filter(l => l.dataset === dbName)
+      .sort((a, b) => b.n_papers - a.n_papers);
+    let shown = 0;
+    function renderChunk() {
+      all.slice(shown, shown + LEAF_PAGE).forEach(leaf => {
+        const row = makeRow(3, leaf.curie, countsLabel(leaf), {
+          hasChildren: false,
+          onNavigate: () => { window.gotoPage('explore-public'); window.Explore.searchFor(leaf.curie); },
+        });
+        wrap.insertBefore(row, more);
+      });
+      shown += LEAF_PAGE;
+      more.hidden = shown >= all.length;
+      moreBtn.textContent = `Load ${Math.min(LEAF_PAGE, all.length - shown)} more (of ${fmt(all.length)})`;
+    }
+    const more = document.createElement('div');
+    more.className = 'tree-loadmore';
+    const moreBtn = document.createElement('button');
+    moreBtn.type = 'button';
+    more.appendChild(moreBtn);
+    wrap.appendChild(more);
+    moreBtn.addEventListener('click', renderChunk);
+    const viewAll = document.createElement('div');
+    viewAll.className = 'tree-loadmore';
+    const viewAllBtn = document.createElement('button');
+    viewAllBtn.type = 'button';
+    viewAllBtn.className = 'tree-viewall';
+    viewAllBtn.textContent = `View all ${fmt(all.length)} in Explore \u2192`;
+    viewAllBtn.addEventListener('click', () => { window.gotoPage('explore-public'); window.Explore.selectDb(dbName); });
+    viewAll.appendChild(viewAllBtn);
+    wrap.appendChild(viewAll);
+    renderChunk();
+    return wrap;
+  }
+
+  function buildDbChildren(dataType) {
+    const wrap = document.createElement('div');
+    wrap.className = 'tree-children';
+    DATA.by_db.filter(d => d.data_type === dataType).forEach(dbRow => {
+      const row = makeRow(2, dbRow.dataset, countsLabel(dbRow), {
+        hasChildren: true,
+        onNavigate: () => { window.gotoPage('explore-public'); window.Explore.selectDb(dbRow.dataset); },
+        buildChildren: () => buildLeafChildren(dbRow.dataset),
+      });
+      wrap.appendChild(row);
     });
-    tbody.appendChild(tr);
+    return wrap;
+  }
+
+  DATA.by_data_type.forEach(dt => {
+    const row = makeRow(1, dt.data_type, countsLabel(dt), {
+      hasChildren: true,
+      onNavigate: () => { window.gotoPage('explore-public'); window.Explore.selectDataType(dt.data_type); },
+      buildChildren: () => buildDbChildren(dt.data_type),
+    });
+    root.appendChild(row);
   });
 })();
 
@@ -638,7 +741,20 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
   window.Explore = {
     refresh() { renderHead(); renderFacets(); renderTable(); },
     selectDb(dbName) {
+      Object.values(selections).forEach(s => s.clear());
       selections.db = new Set([dbName]);
+      searchInput.value = '';
+      renderFacets(); renderTable();
+    },
+    selectDataType(dataType) {
+      Object.values(selections).forEach(s => s.clear());
+      selections.data_type = new Set([dataType]);
+      searchInput.value = '';
+      renderFacets(); renderTable();
+    },
+    searchFor(text) {
+      Object.values(selections).forEach(s => s.clear());
+      searchInput.value = text;
       renderFacets(); renderTable();
     },
   };
