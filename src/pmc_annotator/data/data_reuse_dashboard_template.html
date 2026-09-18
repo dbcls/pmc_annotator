@@ -309,6 +309,20 @@ function accUrl(row) {
   const base = DATA.db_uri[row.db];
   return base ? `${base}${row.id}` : null;
 }
+
+// ---------- Browser back/forward: every tab switch, drill-down click, facet
+// toggle or search commits one history entry so the back button steps
+// through the user's actual click history instead of leaving the page. ----
+const Nav = {
+  restoring: false,
+  currentPage: 'home',
+  commit() {
+    if (Nav.restoring) return;
+    const state = { page: Nav.currentPage, explore: window.Explore ? window.Explore.getState() : null };
+    history.pushState(state, '', '#' + Nav.currentPage);
+  },
+};
+
 const CLASS_LABEL = {
   deposited_research_record: 'deposited research record',
   deposited_entity_registry: 'deposited entity registry',
@@ -603,6 +617,7 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
       btn.addEventListener('click', () => {
         Object.values(selections).forEach(s => s.clear());
         renderFacets(); renderTable();
+        Nav.commit();
       });
       facetCol.appendChild(btn);
     }
@@ -625,6 +640,7 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
         cb.addEventListener('change', () => {
           if (cb.checked) selections[key].add(opt.value); else selections[key].delete(opt.value);
           renderFacets(); renderTable();
+          Nav.commit();
         });
         group.appendChild(row);
       });
@@ -735,27 +751,50 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
   }
 
   searchInput.addEventListener('input', renderTable);
+  searchInput.addEventListener('change', () => Nav.commit());
+
+  function getExploreState() {
+    const sel = {};
+    Object.entries(selections).forEach(([k, v]) => { sel[k] = [...v]; });
+    return { selections: sel, search: searchInput.value };
+  }
+  function setExploreState(state) {
+    Object.values(selections).forEach(s => s.clear());
+    if (state && state.selections) {
+      Object.entries(state.selections).forEach(([k, arr]) => {
+        if (selections[k] && Array.isArray(arr)) arr.forEach(v => selections[k].add(v));
+      });
+    }
+    searchInput.value = (state && state.search) || '';
+    renderFacets(); renderTable();
+  }
 
   // exposed so the page-level Public/QA tabs (outside this closure) can
-  // re-render the Explore section when CURRENT_VIEW changes
+  // re-render the Explore section when CURRENT_VIEW changes, and so Nav can
+  // snapshot/restore facet+search state for browser back/forward
   window.Explore = {
     refresh() { renderHead(); renderFacets(); renderTable(); },
+    getState: getExploreState,
+    setState: setExploreState,
     selectDb(dbName) {
       Object.values(selections).forEach(s => s.clear());
       selections.db = new Set([dbName]);
       searchInput.value = '';
       renderFacets(); renderTable();
+      Nav.commit();
     },
     selectDataType(dataType) {
       Object.values(selections).forEach(s => s.clear());
       selections.data_type = new Set([dataType]);
       searchInput.value = '';
       renderFacets(); renderTable();
+      Nav.commit();
     },
     searchFor(text) {
       Object.values(selections).forEach(s => s.clear());
       searchInput.value = text;
       renderFacets(); renderTable();
+      Nav.commit();
     },
   };
 
@@ -779,10 +818,12 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
     allSections.forEach(s => { s.hidden = true; });
     document.getElementById(pageIds[pageKey]).hidden = false;
     tabButtons.forEach(b => b.classList.toggle('active', b.dataset.page === pageKey));
+    Nav.currentPage = pageKey;
     if (pageKey === 'explore-public' || pageKey === 'explore-qa') {
       CURRENT_VIEW = pageKey === 'explore-qa' ? 'qa' : 'public';
       window.Explore.refresh();
     }
+    Nav.commit();
   }
   window.gotoPage = goTo;
 
@@ -791,7 +832,24 @@ let CURRENT_VIEW = 'public'; // 'public' | 'qa' -- driven by the page-level tabs
   document.querySelectorAll('[data-goto]').forEach(btn => {
     btn.addEventListener('click', () => goTo(btn.dataset.goto));
   });
+
+  // initial paint: land on Dashboard without pushing a history entry, then
+  // replace the current (already-existing) entry with that state so the
+  // very first "back" from any later click returns here cleanly.
+  Nav.restoring = true;
   goTo('home');
+  Nav.restoring = false;
+  history.replaceState({ page: 'home', explore: window.Explore.getState() }, '', '#home');
+
+  // browser back/forward: restore whatever page + facet/search state was
+  // captured in that history entry, without re-committing a new one.
+  window.addEventListener('popstate', (e) => {
+    Nav.restoring = true;
+    const state = e.state || { page: 'home', explore: null };
+    goTo(state.page);
+    if (state.explore) window.Explore.setState(state.explore);
+    Nav.restoring = false;
+  });
 })();
 </script>
 </body>
