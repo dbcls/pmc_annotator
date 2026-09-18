@@ -37,12 +37,15 @@ AVAIL = re.compile(r"\b(publicly|freely) available\b|\bavailable (at|from|in|und
 # 追加 trim: 'alignment with'(設定のwith) と against/using the …database を除去
 REF_USE = re.compile(
     r"\b("
-    r"aligned (to|against)|align(ing|ment) (to|against)"
-    r"|mapp(ed|ing) (to|against|onto)"
+    r"aligned (to|against)|align(ing|ment) (to|against)|mapp(ed|ing) (to|against|onto)"
     r"|using the [\w\s\-]{0,25}(genome|assembly|reference)"
     r"|reference (genome|sequence|assembly|proteome)"
     r"|index(ed)? (to|against)|against the [\w\s\-]{0,25}(genome|assembly)"
     r"|as (the )?quer(y|ies)"
+    r"|ref\|"                                   # NCBI/BLAST defline  ref|XP_…|
+    r"|orthologs?\b[^.]{0,40}(aligned|from)"    # ortholog alignment listings
+    r"|aligned in (clustal|muscle|mafft|t-?coffee)"
+    r"|compared (to|with) [^.]{0,40}(accession|genbank|refseq|reference sequence)"
     r")\b", re.I)
 
 # --- ドメイン/ファミリー registry: ほぼ常に「注釈=言及」。used 昇格させない ---
@@ -85,7 +88,7 @@ def route(cls, dataset, sig, flat_table):
             return "used", "", "rule", False, "ref_resource_use"
         if sig["use_acq"]:
             return "", "use", "llm_pending", True, "ref_reuse_ambiguous"
-        return "mentioned", "", "rule", False, "default_mention"
+        return "", "none", "llm_pending", True, "default_to_llm"
 
     if cls in DEPOSIT_CLASSES:
         if sig["use_acq"] and sig["gen_dep"]:
