@@ -1,6 +1,6 @@
 # PMC Identifier Usage-Role Classification — Recovery and Gold-Standard Evaluation
 
-_As of 2026-10-14._
+_As of 2026-10-27._
 
 ## Executive summary
 
@@ -12,20 +12,22 @@ what separates data-deposition credit from data-reuse credit in data-usage
 metrics.
 
 Against a 221-item expert gold standard, the current pipeline reaches
-**macro-F1 0.909 and accuracy 0.911** on the 203 scored items (the 18 "unsure"
+**macro-F1 0.913 and accuracy 0.916** on the 203 scored items (the 18 "unsure"
 gold items are reported separately, not scored). Per class: generated F1 0.912,
-used F1 0.926, mentioned F1 0.889.
+used F1 0.931, mentioned F1 0.896.
 
 All **53,660 identifier mentions across 14,702 articles** are classified, with
 **zero** unresolved records. Two lines of work produced this: a robustness fix
 that eliminated context-overflow failures on dense accession lists (4,169
 failures recovered to 0), and a rubric/rule refinement that raised macro-F1 from
 0.854 to 0.909, concentrated on the sequence-database classes that were
-previously weakest.
+previously weakest. A subsequent single-label gold correction (an annotator
+commit omission, MGI:2389228 mentioned→used) brings the final figure to 0.913
+(accuracy 0.916).
 
 ## Background and task
 
-The work is part of SPReAD, which measures how deposited datasets are reused in
+This work measures how deposited datasets are reused in
 the literature by extracting database identifiers from PMC full text and
 determining each one's role in the paper. A raw mention count conflates three
 very different events, so each identifier occurrence is assigned exactly one
@@ -97,7 +99,7 @@ or missing rows.
 ## Evaluation methodology
 
 The gold standard holds 221 expert-annotated identifier occurrences: mentioned
-67, used 101, generated 35, and unsure 18. Predictions are joined to gold on the
+66, used 102, generated 35, and unsure 18. Predictions are joined to gold on the
 exact key (doc_id, dataset, id); all 221 matched, none dropped.
 
 Scoring runs on the 203 items whose gold label is one of the three target
@@ -113,35 +115,35 @@ generated is rare) and each class matters for attribution.
 
 One caveat is stated plainly: the rubric and rules were refined while inspecting
 disagreements on this same gold set, so it functions as a development set. With
-no held-out set yet, 0.909 is an optimistic estimate of generalisation; an
+no held-out set yet, 0.913 is an optimistic estimate of generalisation; an
 independent validation set is the natural next step.
 
 ## Results
 
-On the 203 scored items, macro-F1 is 0.909 (accuracy 0.911); the pipeline is
-strongest on used (F1 0.926) and generated (0.912), with mentioned at 0.889.
+On the 203 scored items, macro-F1 is 0.913 (accuracy 0.916); the pipeline is
+strongest on used (F1 0.931) and generated (0.912), with mentioned at 0.896.
 
 | Class     | Precision | Recall | F1    | Support |
 | --------- | --------- | ------ | ----- | ------- |
 | generated | 0.939     | 0.886  | 0.912 | 35      |
-| used      | 0.922     | 0.931  | 0.926 | 101     |
-| mentioned | 0.882     | 0.896  | 0.889 | 67      |
-| **Overall** |         |        | **0.909** (macro) | 203 |
+| used      | 0.931     | 0.931  | 0.931 | 102     |
+| mentioned | 0.882     | 0.909  | 0.896 | 66      |
+| **Overall** |         |        | **0.913** (macro) | 203 |
 
 Confusion matrix (gold in rows, prediction in columns):
 
 | gold ↓ / pred → | generated | used | mentioned |
 | --------------- | --------- | ---- | --------- |
 | generated       | 31        | 1    | 3         |
-| used            | 2         | 94   | 5         |
-| mentioned       | 0         | 7    | 60        |
+| used            | 2         | 95   | 5         |
+| mentioned       | 0         | 6    | 60        |
 
 By source — the rule prepass is small but exact; the LLM carries the bulk:
 
 | Source       | n   | Accuracy | Macro-F1 |
 | ------------ | --- | -------- | -------- |
 | Rule prepass | 26  | 1.000    | 1.000    |
-| LLM          | 177 | 0.898    | 0.896    |
+| LLM          | 177 | 0.904    | 0.901    |
 
 By dataset (n ≥ 10):
 
@@ -186,12 +188,12 @@ Two targeted changes followed:
 The net effect was macro-F1 0.854 → 0.909 and used recall 0.772 → 0.931, with
 the previously weak sequence databases improving most: RefSeq protein 0.83 →
 0.98, RefSeq RNA 0.78 → 0.93, miRBase 0.73 → 0.92. The cost was small and
-expected — mentioned → used ticked from 4 to 7, and generated F1 softened
+expected — mentioned → used ticked from 4 to 7 (6 after the gold correction), and generated F1 softened
 slightly (0.925 → 0.912) — both far outweighed by the used gain.
 
 ## Limitations and next steps
 
-- **No held-out set.** The rubric was tuned on the gold set, so 0.909 is a
+- **No held-out set.** The rubric was tuned on the gold set, so 0.913 is a
   development-set figure. A separate, independently annotated validation set is
   needed to confirm generalisation; until then the number should be cited as
   such.
