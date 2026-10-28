@@ -34,7 +34,7 @@ _`pmc_annotator` のゴールドスタンダード用、および identifiers.or
 1. この研究がレコードを寄託・登録したか → **generated**。
 2. 既存のレコードや材料を入力/材料として取り込んでいるか（規約A・B参照）→ **used**。
 3. それ以外（命名・注釈・相互参照・比較リスト）→ **mentioned**。
-4. コンテキストだけでは判定できない場合 → **unsure**（真の曖昧性に限る。§6参照）。
+4. コンテキストだけでは判定できない場合 → **unsure**（真の曖昧性に限る。§7参照）。
 
 ## 4. 規約A — used / mentioned の境界（配列・データ）
 
@@ -57,7 +57,7 @@ _`pmc_annotator` のゴールドスタンダード用、および identifiers.or
 - **比較・相同性リスト** — BLAST ヒット表、%identity 表、オルソログ/パラログ列挙、
   系統の種リスト — で、accession が比較対象の実体を命名するだけで、その配列をここで
   処理していないことが窓から明らかな場合。論文がそのレコードを産生／処理した可能性を
-  窓から排除できない場合は、mentioned ではなく §6 の **unsure** とする。
+  窓から排除できない場合は、mentioned ではなく §7 の **unsure** とする。
 
 括弧形はラベルを決めない。プライマーとしての「GAPDH (NM_204305) ggagtcaac...」は
 **used**、「LAMA2 (NM_000426), lacking an intron in mouse」は **mentioned**。
@@ -74,7 +74,23 @@ _`pmc_annotator` のゴールドスタンダード用、および identifiers.or
   「downloaded from PDB. GenBank identifiers: Rattus Kv1.1, NM_173095」
   （入手したのは構造、GenBank ID は配列の注記）→ **mentioned**。
 
-## 6. エッジ規則
+## 6. gold_subtag（used 行のみ）
+
+`gold_subtag` は **`used` と判定した行にのみ**付ける補助タグ。generated・mentioned・unsure
+では空欄にする。used を「参照資源としての使用」と「データ/材料の再利用」に二分する:
+
+- **`ref_resource`** — レコードを**計算の参照資源として投入**した used: 配列をプライマー /
+  プローブ / siRNA 設計に使用、クローニング鋳型、BLAST / アラインメントのクエリや対象、
+  ナンバリング / 変異の参照、アライン先の参照ゲノム。功績は参照提供元。
+- **（空欄）** — それ以外の used: 既存の**データセットを丸ごと再解析**した場合（GEO
+  series / sample をダウンロードして再解析など）、または**物理的生物材料を入手して使った**
+  場合（系統・細胞株・クローン・アレル＝規約B）。
+
+判定: レコード/配列そのものを計算の参照に使った → `ref_resource`、データセット/物理材料と
+して再利用した → 空欄。この二択は現行ゴールド（used 102: `ref_resource` 75・空欄 27）と
+一致する。他の3役割ではこの列は使わない。
+
+## 7. エッジ規則
 
 - **「The data from those …」定形 → generated。** コンテキストのみ判定では、寄託 accession に
   付随する「The data from those experiments / samples …」のような表現は、周囲が再利用とも
@@ -92,9 +108,9 @@ _`pmc_annotator` のゴールドスタンダード用、および identifiers.or
   列挙された accession が論文自身のレコードまたは処理した入力でありうる場合。テキストが
   積極的に支持するときのみ確定ラベルを優先する。
   （既知の課題: 現行の分類器はこうしたケースを `mentioned` に寄せがちで、これは本ラベルが
-  防ごうとする過小計上の方向。分類器の unsure 的文脈の扱いの整合は §8 の未決事項。）
+  防ごうとする過小計上の方向。分類器の unsure 的文脈の扱いの整合は §9 の未決事項。）
 
-## 7. 実例表
+## 8. 実例表
 
 | 識別子 (doc)              | 窓（抜粋）                                                      | 役割                | 理由                              |
 | ------------------------- | -------------------------------------------------------------- | ------------------- | --------------------------------- |
@@ -104,9 +120,9 @@ _`pmc_annotator` のゴールドスタンダード用、および identifiers.or
 | MGI:2389228 (PMC3118598)  | "BACE(−/−) mice (MGI:2389228) were obtained from Jackson Lab."  | used                | 系統を入手して使用（B）           |
 | NM_000426 (PMC2377436)    | "LAMA2 (NM_000426), lacking an intron in mouse"                | mentioned           | 注釈の記述（A）                   |
 | NP_919047 (PMC3003312)    | "Creb3L2 (accession no. NP_919047) were obtained from Aviva …" | mentioned           | 入手は抗体、ID は標的命名（B）     |
-| YP_881448 (PMC2667176)    | "YP_881471(478 aa) 90% YP_881448(446 aa) 94% …"                | unsure              | 比較表。窓から generated/used を排除できない（§6） |
+| YP_881448 (PMC2667176)    | "YP_881471(478 aa) 90% YP_881448(446 aa) 94% …"                | unsure              | 比較表。窓から generated/used を排除できない（§7） |
 
-## 8. ステータスと未決事項
+## 9. ステータスと未決事項
 
 本ガイドラインは、used / mentioned の改修後の現行ゴールドスタンダード（221件）で用いた規約を
 反映する。identifiers.org と確認すべき事項:
