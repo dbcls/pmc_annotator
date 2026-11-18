@@ -41,7 +41,7 @@ For each occurrence, in order:
 3. Otherwise — naming, annotation, cross-reference, or comparison listing —
    → **mentioned**.
 4. If the occurrence cannot be placed on context alone, mark **unsure**
-   (reserved for genuine ambiguity; see §6).
+   (reserved for genuine ambiguity; see §7).
 
 ## 4. Convention A — the used / mentioned boundary (sequence / data)
 
@@ -70,7 +70,7 @@ procedure:
   an ortholog / paralog list, a phylogenetic species list — where the window
   makes clear the accession only names a compared entity and its sequence is not
   processed here. If the window cannot exclude that the paper produced or
-  processed the record, label **unsure** instead (§6).
+  processed the record, label **unsure** instead (§7).
 
 The parenthetical form never decides the label. "GAPDH (NM_204305)
 ggagtcaac..." used as a primer is **used**; "LAMA2 (NM_000426), lacking an
@@ -93,7 +93,28 @@ identifier denotes**:
   NM_173095" (a structure obtained; the GenBank ID annotates the sequence) →
   **mentioned**.
 
-## 6. Edge rules
+## 6. gold_subtag (used rows only)
+
+`gold_subtag` is a refinement tag set **only on rows labeled `used`**; leave it
+blank for `generated`, `mentioned`, and `unsure`. It splits `used` into
+reference-resource use versus whole-dataset or material reuse:
+
+- **`ref_resource`** — the record is consumed as a **reference resource in a
+  computation**: a sequence used to design primers / probes / siRNA, a cloning
+  template, a BLAST / alignment query or target, a numbering or variant
+  reference, or a reference genome aligned against. Credit: the reference
+  provider.
+- **(blank)** — any other `used`: a pre-existing **dataset reanalysed as a
+  whole** (a GEO series / sample downloaded and re-analysed), or a **physical
+  biological material obtained and used** (a strain, cell line, clone, or
+  allele; Convention B).
+
+Decide by: did the paper use the record or sequence itself as a reference in a
+computation (→ `ref_resource`), or reuse it as a whole dataset or physical
+material (→ blank)? This binary matches the current gold standard (used 102:
+`ref_resource` 75, blank 27). The field is not used for the other three roles.
+
+## 7. Edge rules
 
 - **"The data from those …" idiom → generated.** In context-only judgment,
   phrasing such as "The data from those experiments / samples …" attached to a
@@ -118,9 +139,9 @@ identifier denotes**:
   input. Prefer a definite call only when the text positively supports one.
   (Known issue: the current classifier tends to push such cases toward
   `mentioned` — the under-crediting direction this label is meant to prevent;
-  aligning its handling of unsure-type contexts is an open item, see §8.)
+  aligning its handling of unsure-type contexts is an open item, see §9.)
 
-## 7. Worked examples
+## 8. Worked examples
 
 | Identifier (doc)          | Window (excerpt)                                               | Role                | Why                               |
 | ------------------------- | -------------------------------------------------------------- | ------------------- | --------------------------------- |
@@ -130,9 +151,9 @@ identifier denotes**:
 | MGI:2389228 (PMC3118598)  | "BACE(−/−) mice (MGI:2389228) were obtained from Jackson Lab."  | used                | strain obtained and used (B)      |
 | NM_000426 (PMC2377436)    | "LAMA2 (NM_000426), lacking an intron in mouse"                | mentioned           | annotation statement (A)          |
 | NP_919047 (PMC3003312)    | "Creb3L2 (accession no. NP_919047) were obtained from Aviva …" | mentioned           | antibody obtained; ID names target (B) |
-| YP_881448 (PMC2667176)    | "YP_881471(478 aa) 90% YP_881448(446 aa) 94% …"                | unsure              | comparison table; window cannot exclude generated / used (§6) |
+| YP_881448 (PMC2667176)    | "YP_881471(478 aa) 90% YP_881448(446 aa) 94% …"                | unsure              | comparison table; window cannot exclude generated / used (§7) |
 
-## 8. Status and open items
+## 9. Status and open items
 
 This guideline reflects the conventions used for the current gold standard
 (221 items) after the used / mentioned refinement. Items to confirm with
