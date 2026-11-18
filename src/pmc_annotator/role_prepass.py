@@ -39,7 +39,7 @@ REF_USE = re.compile(
     r"\b("
     r"aligned (to|against)|align(ing|ment) (to|against)|mapp(ed|ing) (to|against|onto)"
     r"|using the [\w\s\-]{0,25}(genome|assembly|reference)"
-    r"|reference (genome|sequence|assembly|proteome)"
+    r"|reference (genome|assembly|proteome)"   # NOTE: "sequence" を除外。RefSeq/"NCBI Reference Sequence" 等のDB名誤爆を防ぐ(真の参照使用は aligned/mapped to・against the …genome/assembly・compared to …accession で拾う)
     r"|index(ed)? (to|against)|against the [\w\s\-]{0,25}(genome|assembly)"
     r"|as (the )?quer(y|ies)"
     r"|ref\|"                                   # NCBI/BLAST defline  ref|XP_…|
@@ -88,6 +88,7 @@ def route(cls, dataset, sig, flat_table):
             return "used", "", "rule", False, "ref_resource_use"
         if sig["use_acq"]:
             return "", "use", "llm_pending", True, "ref_reuse_ambiguous"
+        #return "mentioned", "", "rule", False, "default_mention"
         return "", "none", "llm_pending", True, "default_to_llm"
 
     if cls in DEPOSIT_CLASSES:
