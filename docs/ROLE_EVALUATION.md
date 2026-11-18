@@ -114,9 +114,9 @@ accuracy because the classes are imbalanced (used and mentioned dominate,
 generated is rare) and each class matters for attribution.
 
 One caveat is stated plainly: the rubric and rules were refined while inspecting
-disagreements on this same gold set, so it functions as a development set. With
-no held-out set yet, 0.913 is an optimistic estimate of generalisation; an
-independent validation set is the natural next step.
+disagreements on this same gold set, so it functions as a development set. An
+independent held-out set (see Held-out validation) now puts the generalisation
+estimate at 0.869.
 
 ## Results
 
@@ -191,12 +191,70 @@ the previously weak sequence databases improving most: RefSeq protein 0.83 →
 expected — mentioned → used ticked from 4 to 7 (6 after the gold correction), and generated F1 softened
 slightly (0.925 → 0.912) — both far outweighed by the used gain.
 
+## Held-out validation
+
+To check generalisation, a second gold set of 200 identifier occurrences was
+annotated independently, **document-disjoint** from the 221-item development gold
+(no held-out document appears in the development set) and drawn from the same
+corpus pool with the same stratification. Its labels: used 81, generated 60,
+mentioned 45, unsure 14. Predictions come from the same final pipeline; scoring
+excludes the 14 unsure, leaving 186.
+
+On the held-out set, **macro-F1 is 0.869 (accuracy 0.882)** — only ~0.04 below
+the 0.913 development figure, so the pipeline generalises well and the
+development number is only mildly optimistic.
+
+These held-out figures were measured against the **pre-proximity-guard**
+`role_prepass.py` — the exact program committed alongside this held-out gold —
+so the result and the program that produced it are frozen together as a fair,
+independent generalisation measurement. The proximity guard described below is a
+subsequent change, to be re-validated on a future, untouched held-out set.
+
+| Class     | Precision | Recall | F1    | Support |
+| --------- | --------- | ------ | ----- | ------- |
+| generated | 1.000     | 0.933  | 0.966 | 60      |
+| used      | 0.812     | 0.963  | 0.881 | 81      |
+| mentioned | 0.882     | 0.667  | 0.759 | 45      |
+| **Overall** |         |        | **0.869** (macro) | 186 |
+
+Confusion matrix (gold in rows, prediction in columns):
+
+| gold ↓ / pred → | generated | used | mentioned |
+| --------------- | --------- | ---- | --------- |
+| generated       | 56        | 3    | 1         |
+| used            | 0         | 78   | 3         |
+| mentioned       | 0         | 15   | 30        |
+
+The one notable weakness is mentioned recall (0.667): the dominant error is
+mentioned → used (15 of 18 total errors). By source it is concentrated in the
+rule prepass, which drops to macro-F1 0.405 on held-out (20 items) while the LLM
+holds at 0.919 (166 items) — the rule layer, exact on the development gold,
+over-fits. The cause: the reference-use regex `REF_USE` fires on a document-level
+cue (mapped to / as query / reference assembly / against the genome) anywhere in
+the window and promotes an accession to `used` even when the accession itself
+sits in a homology or comparison listing elsewhere in the window (TAIR, RefSeq
+and Ensembl homology tables), which the guideline treats as `mentioned`.
+
+A proximity guard addresses this: `REF_USE` now promotes to `used` only when a
+cue lies within ±70 characters of the marked accession, otherwise the case is
+deferred to the LLM. On held-out this removes all 9 rule mis-fires (they defer to
+the stronger LLM path) while keeping the 6 adjacent-cue `used` cases rule-final; a
+re-run is expected to lift the held-out figure toward ~0.91. On the 14 unsure
+items the pipeline leans mentioned (9), then used (4), generated (1).
+
+By dataset (n ≥ 8), held-out macro-F1 is strong on GEO sample 1.00, GEO series
+0.944, RefSeq protein 0.912 and miRBase 0.874, versus the sequence-table-heavy
+RefSeq RNA 0.557, TAIR 0.556, RefSeq genomic 0.483 and Ensembl 0.444, where the
+mentioned→used mis-fire concentrates.
+
 ## Limitations and next steps
 
-- **No held-out set.** The rubric was tuned on the gold set, so 0.913 is a
-  development-set figure. A separate, independently annotated validation set is
-  needed to confirm generalisation; until then the number should be cited as
-  such.
+- **Development vs held-out.** The rubric was tuned on the 221-item gold, so
+  0.913 is a development-set figure; the independent 200-item held-out (above)
+  gives 0.869, a ~0.04 generalisation gap. The main residual error is the rule
+  prepass over-firing `used` on homology/comparison listings, addressed by the
+  proximity guard; re-running the pipeline with it is the next step to confirm
+  the held-out gain.
 - **Residual confusions.** The remaining errors are small and partly reflect
   genuine annotation ambiguity: generated vs used on GEO deposition statements
   (whether data available at a GEO series was produced here or reused), and a
