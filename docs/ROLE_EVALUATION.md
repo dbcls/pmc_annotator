@@ -116,7 +116,7 @@ generated is rare) and each class matters for attribution.
 One caveat is stated plainly: the rubric and rules were refined while inspecting
 disagreements on this same gold set, so it functions as a development set. An
 independent held-out set (see Held-out validation) now puts the generalisation
-estimate at 0.869.
+estimate at 0.869 — 0.904 with the current proximity-guard pipeline.
 
 ## Results
 
@@ -239,8 +239,11 @@ A proximity guard addresses this: `REF_USE` now promotes to `used` only when a
 cue lies within ±70 characters of the marked accession, otherwise the case is
 deferred to the LLM. On held-out this removes all 9 rule mis-fires (they defer to
 the stronger LLM path) while keeping the 6 adjacent-cue `used` cases rule-final; a
-re-run is expected to lift the held-out figure toward ~0.91. On the 14 unsure
-items the pipeline leans mentioned (9), then used (4), generated (1).
+re-running the guard pipeline measures macro-F1 0.904 (186 items; mentioned
+recall 0.667→0.822, mentioned→used 15→8, used recall 0.881→0.938), confirming
+the projection — a confirmation, not an independent estimate, on this now-seen
+held-out. On the 14 unsure items the pipeline leans mentioned (9), then used (4),
+generated (1).
 
 By dataset (n ≥ 8), held-out macro-F1 is strong on GEO sample 1.00, GEO series
 0.944, RefSeq protein 0.912 and miRBase 0.874, versus the sequence-table-heavy
@@ -253,8 +256,8 @@ mentioned→used mis-fire concentrates.
   0.913 is a development-set figure; the independent 200-item held-out (above)
   gives 0.869, a ~0.04 generalisation gap. The main residual error is the rule
   prepass over-firing `used` on homology/comparison listings, addressed by the
-  proximity guard; re-running the pipeline with it is the next step to confirm
-  the held-out gain.
+  proximity guard; re-running the guard pipeline confirms the gain (measured
+  macro-F1 0.904 on the 186-item held-out).
 - **Residual confusions.** The remaining errors are small and partly reflect
   genuine annotation ambiguity: generated vs used on GEO deposition statements
   (whether data available at a GEO series was produced here or reused), and a
