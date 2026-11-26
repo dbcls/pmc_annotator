@@ -52,6 +52,38 @@ DB_CLASS = {
     "bioproject":"deposited_research_record",   # INSDC BioProject (寄託系)
     "hp_inheritance":"out_of_scope",            # HPO遺伝形式サブセット (概念)
     "uberon":"out_of_scope",                    # 解剖オントロジー (概念)
+
+    # 未分類38件の追記: togoid_extract_patterns.yaml の safe/context_required
+    # に存在するが DB_CLASS に無く、COALESCE(...,'out_of_scope') で無条件に
+    # out_of_scope へ落ちていたもの。insdc (生シーケンス寄託) が最大の実害
+    # で、out_of_scope の大半 (~98% of mentions) を占めていた -- 概念/文献
+    # 識別子ではなく明確な deposited_research_record。
+    # deposited_research_record: 生の研究データ寄託 (GEO/SRA/assembly と同格)
+    "insdc":"deposited_research_record","insdc_master":"deposited_research_record",
+    "biosample":"deposited_research_record","bioproject_umbrella":"deposited_research_record",
+    "assembly_refseq":"deposited_research_record",
+    "jga_dataset":"deposited_research_record","jga_study":"deposited_research_record",
+    "gea":"deposited_research_record","nbdc_human_db":"deposited_research_record",
+    "clinvar":"deposited_research_record",   # 提出ベースの臨床バリアント解釈 (寄託系)
+    # deposited_entity_registry: 新規entity登録 (glytoucanと同格)
+    "glycomotif":"deposited_entity_registry",
+    # curated_entity_registry: キュレータが命名・同定するレジストリ
+    "lrg":"curated_entity_registry","mgi_genotype":"curated_entity_registry",
+    "omim_phenotype":"curated_entity_registry","orphanet_gene":"curated_entity_registry",
+    "orphanet_phenotype":"curated_entity_registry","swisslipids":"curated_entity_registry",
+    "vgnc":"curated_entity_registry",
+    # derived_curated: 注釈・派生の産物 (RefSeq/UniProt/Pfam等と同格)
+    "cellosaurus":"derived_curated","chembl_compound":"derived_curated",
+    "chembl_target":"derived_curated","hmdb":"derived_curated",
+    "lncbook_gene":"derived_curated","mgi_gene":"derived_curated",
+    "pubchem_pathway":"derived_curated","reactome_reaction":"derived_curated",
+    "rfam":"derived_curated","rnacentral":"derived_curated",
+    "wormbase_gene":"derived_curated","xenbase_gene":"derived_curated",
+    "zfin_transcript":"derived_curated",
+    # out_of_scope: 概念/オントロジー識別子 (指標対象外)
+    "clo":"out_of_scope","hp_phenotype":"out_of_scope","meddra":"out_of_scope",
+    "mondo":"out_of_scope","nando":"out_of_scope","ncit_disease":"out_of_scope",
+    "ncit_tissue":"out_of_scope",
 }
 CLASS_ORDER = ["deposited_research_record","deposited_entity_registry",
                "curated_entity_registry","derived_curated","out_of_scope"]
@@ -63,6 +95,9 @@ def main():
     ap.add_argument("--out-dir", default="metrics")
     ap.add_argument("--min-confidence", choices=["all","high"], default="all")
     ap.add_argument("--doc-year", default=None, help="doc_year.tsv (doc_id<TAB>year) 指定時 usage_by_year.tsv を出す")
+    ap.add_argument("--reconciliation", default=None,
+                    help="namespace_reconciliation.tsv (reconcile_namespaces.py). "
+                         "指定時、各行に identifiers.org CURIE/URI を付与する")
     a=ap.parse_args()
     import os; os.makedirs(a.out_dir, exist_ok=True)
     c=duckdb.connect()
@@ -83,6 +118,24 @@ def main():
             delim='\t', header=false,
             columns={{'doc_id':'VARCHAR','year':'VARCHAR'}});""")
 
+    has_registry = bool(a.reconciliation)
+    if has_registry:
+        c.execute(f"""CREATE VIEW registry AS
+          SELECT dataset_key AS dataset, registry_name,
+                 NULLIF(current_uri, '') AS identifiers_org_uri
+          FROM read_csv('{a.reconciliation}', delim='\t', header=true, quote='')
+          QUALIFY row_number() OVER (PARTITION BY dataset_key) = 1;""")
+    registry_join = "LEFT JOIN registry r ON base.dataset=r.dataset" if has_registry else ""
+    # any_value() because these are constant per (dataset) within each GROUP BY,
+    # but DuckDB can't infer that functional dependency through the join itself.
+    registry_cols_id = (", any_value(r.registry_name) AS registry_name, "
+                         "any_value(r.identifiers_org_uri) AS identifiers_org_uri, "
+                         "any_value(r.identifiers_org_uri || base.id) AS identifiers_org_curie"
+                         if has_registry else "")
+    registry_cols_db = (", any_value(r.registry_name) AS registry_name, "
+                         "any_value(r.identifiers_org_uri) AS identifiers_org_uri"
+                         if has_registry else "")
+
     conf_filter = "AND m.confidence='high'" if a.min_confidence=="high" else ""
     c.execute(f"""CREATE VIEW base AS
       SELECT m.doc_id, v.dataset, v.id, v.oracle, m.confidence,
@@ -95,18 +148,18 @@ def main():
     od=a.out_dir
     def dump(sql,path): c.execute(f"COPY ({sql}) TO '{od}/{path}' (FORMAT CSV, DELIMITER '\t', HEADER TRUE)")
 
-    dump("""SELECT dataset,id,any_value(class) AS class,any_value(oracle) AS oracle,
-                   COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs
-            FROM base GROUP BY dataset,id ORDER BY n_docs DESC,n_mentions DESC""","usage_by_entry.tsv")
-    dump("""SELECT dataset,any_value(class) AS class,COUNT(DISTINCT id) AS n_unique_entries,
-                   COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs
-            FROM base GROUP BY dataset ORDER BY n_unique_entries DESC""","usage_by_db.tsv")
+    dump(f"""SELECT base.dataset,base.id,any_value(class) AS class,any_value(oracle) AS oracle,
+                   COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs{registry_cols_id}
+            FROM base {registry_join} GROUP BY base.dataset,base.id ORDER BY n_docs DESC,n_mentions DESC""","usage_by_entry.tsv")
+    dump(f"""SELECT base.dataset,any_value(class) AS class,COUNT(DISTINCT id) AS n_unique_entries,
+                   COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs{registry_cols_db}
+            FROM base {registry_join} GROUP BY base.dataset ORDER BY n_unique_entries DESC""","usage_by_db.tsv")
     dump("""SELECT doc_id,COUNT(DISTINCT id) AS n_entries,COUNT(DISTINCT dataset) AS n_dbs,
                    string_agg(DISTINCT dataset,',') AS dbs
             FROM base GROUP BY doc_id ORDER BY n_entries DESC""","usage_by_doc.tsv")
-    dump("""SELECT doc_id,dataset,id,any_value(class) AS class,any_value(oracle) AS oracle,
-                   any_value(confidence) AS confidence,COUNT(*) AS n_in_doc
-            FROM base GROUP BY doc_id,dataset,id ORDER BY doc_id,dataset,id""","usage_long.tsv")
+    dump(f"""SELECT doc_id,base.dataset,base.id,any_value(class) AS class,any_value(oracle) AS oracle,
+                   any_value(confidence) AS confidence,COUNT(*) AS n_in_doc{registry_cols_id}
+            FROM base {registry_join} GROUP BY doc_id,base.dataset,base.id ORDER BY doc_id,base.dataset,base.id""","usage_long.tsv")
     dump("""SELECT class,COUNT(DISTINCT dataset) AS n_dbs,COUNT(DISTINCT id) AS n_entries,
                    COUNT(*) AS n_mentions,COUNT(DISTINCT doc_id) AS n_docs
             FROM base GROUP BY class ORDER BY n_entries DESC""","usage_by_class.tsv")

@@ -12,7 +12,7 @@ from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
-def process_shard_togoid(shard_entry, output_dir_str, yaml_path_str):
+def process_shard_togoid(shard_entry, output_dir_str, yaml_path_str, include_tables_text=False):
     import pandas as pd
     from pathlib import Path
     from pmc_annotator.preprocess import JATSParser
@@ -25,8 +25,10 @@ def process_shard_togoid(shard_entry, output_dir_str, yaml_path_str):
     if done_marker.exists():
         return {"shard_id": shard_id, "status": "skipped", "n_acc": 0}
 
-    parser = JATSParser(include_captions=True, include_tables_text=False)
-    ann = TogoIDAnnotator(yaml_path_str)  # YAMLは各プロセスで1回ロード
+    parser = JATSParser(include_captions=True, include_tables_text=include_tables_text)
+    # YAMLは各プロセスで1回ロード。use_context_layer=True で context_required層
+    # (pdb, uniprot: 近傍キーワードがある場合のみ抽出) も有効化する。
+    ann = TogoIDAnnotator(yaml_path_str, use_context_layer=True)
 
     rows = []
     n_docs = 0
@@ -97,7 +99,8 @@ def cmd_run(args):
     out_str = str(output_dir)
 
     with ProcessPoolExecutor(max_workers=args.workers) as ex:
-        futures = {ex.submit(process_shard_togoid, s, out_str, yaml_path): s["shard_id"]
+        futures = {ex.submit(process_shard_togoid, s, out_str, yaml_path,
+                             args.include_tables_text): s["shard_id"]
                    for s in shards}
         for fut in as_completed(futures):
             r = fut.result()
@@ -143,6 +146,9 @@ def main():
                    help="togoid_extract_patterns.yaml (省略時はパッケージ同梱)")
     p.add_argument("--global-range", default=None)
     p.add_argument("--workers", type=int, default=32)
+    p.add_argument("--include-tables-text", action="store_true",
+                   help="Also scan table-cell/table-footnote/caption text, not just body "
+                        "prose (off by default, matching the pipeline's original scope)")
     args = ap.parse_args()
     if args.cmd == "run":
         cmd_run(args)

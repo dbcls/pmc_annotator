@@ -16,6 +16,7 @@ dependencies = [
     "requests",      # HTTP (verification, LLM backends)
     "pyyaml",        # pattern / config files
     "pandas",        # analysis / eval
+    "openpyxl",      # xlsx export (build_comparison_workbook)
 ]
 
 [project.optional-dependencies]

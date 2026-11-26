@@ -1,0 +1,8 @@
+[console_scripts]
+pmc-annotate = pmc_annotator.pipeline:main
+pmc-build-payloads = pmc_annotator.build_llm_payloads:main
+pmc-build-windows = pmc_annotator.build_windows:main
+pmc-eval-roles = pmc_annotator.eval_roles:main
+pmc-make-gold = pmc_annotator.make_gold_sample:main
+pmc-role-prepass = pmc_annotator.role_prepass:main
+pmc-role-run = pmc_annotator.role_llm_run:main

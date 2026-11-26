@@ -1,0 +1,11 @@
+lxml
+pyarrow
+duckdb
+pysbd
+requests
+pyyaml
+pandas
+
+[hunflair]
+flair>=0.14
+scispacy
