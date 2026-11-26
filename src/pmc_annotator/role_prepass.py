@@ -37,12 +37,15 @@ AVAIL = re.compile(r"\b(publicly|freely) available\b|\bavailable (at|from|in|und
 # 追加 trim: 'alignment with'(設定のwith) と against/using the …database を除去
 REF_USE = re.compile(
     r"\b("
-    r"aligned (to|against)|align(ing|ment) (to|against)"
-    r"|mapp(ed|ing) (to|against|onto)"
+    r"aligned (to|against)|align(ing|ment) (to|against)|mapp(ed|ing) (to|against|onto)"
     r"|using the [\w\s\-]{0,25}(genome|assembly|reference)"
-    r"|reference (genome|sequence|assembly|proteome)"
+    r"|reference (genome|assembly|proteome)"   # NOTE: "sequence" を除外。RefSeq/"NCBI Reference Sequence" 等のDB名誤爆を防ぐ(真の参照使用は aligned/mapped to・against the …genome/assembly・compared to …accession で拾う)
     r"|index(ed)? (to|against)|against the [\w\s\-]{0,25}(genome|assembly)"
     r"|as (the )?quer(y|ies)"
+    r"|ref\|"                                   # NCBI/BLAST defline  ref|XP_…|
+    r"|orthologs?\b[^.]{0,40}(aligned|from)"    # ortholog alignment listings
+    r"|aligned in (clustal|muscle|mafft|t-?coffee)"
+    r"|compared (to|with) [^.]{0,40}(accession|genbank|refseq|reference sequence)"
     r")\b", re.I)
 
 # --- ドメイン/ファミリー registry: ほぼ常に「注釈=言及」。used 昇格させない ---
@@ -60,13 +63,36 @@ DAS = re.compile(
 DEPOSIT_CLASSES = {"deposited_research_record", "deposited_entity_registry"}
 REF_CLASSES = {"derived_curated", "curated_entity_registry"}
 
+# --- «マーカー» 近接ガード -------------------------------------------------
+# REF_USE は窓全体で発火するため、対象アクセッション «…» とは無関係な別の場所の
+# 手がかり(mapped to / as query / reference assembly / against the genome 等)を拾い、
+# homology 列挙・種リスト・プローブ注釈表の accession を誤って used に昇格させていた。
+# → 手がかりが «マーカー» の近傍(±REF_USE_NEAR_CHARS 文字)にある時だけ ref_use を採用。
+# held-out 検証: 誤発火9件は最短距離 77〜762、正しい used の隣接例は大半が ≤67。閾値70で分離。
+# (ガイドライン §4「比較・相同性リストは mentioned」と整合。遠い手がかりは LLM に委譲。)
+_MARKER = re.compile(r"«[^»]*»")
+REF_USE_NEAR_CHARS = 70
+
+
+def ref_use_near(text, window=REF_USE_NEAR_CHARS):
+    m = _MARKER.search(text)
+    if not m:
+        return bool(REF_USE.search(text))   # マーカー無し窓は従来挙動にフォールバック
+    ms, me = m.span()
+    for x in REF_USE.finditer(text):
+        if x.start() < me and x.end() > ms:              # マーカーと重なる
+            return True
+        if min(abs(x.start() - me), abs(x.end() - ms)) <= window:
+            return True
+    return False
+
 
 def signals(text):
     return {
         "gen_dep": bool(GEN_DEP.search(text)),
         "use_acq": bool(USE_ACQ.search(text)),
         "avail":   bool(AVAIL.search(text)),
-        "ref_use": bool(REF_USE.search(text)),
+        "ref_use": ref_use_near(text),       # 近接ガード付き
         "das":     bool(DAS.search(text)),
     }
 
@@ -85,7 +111,8 @@ def route(cls, dataset, sig, flat_table):
             return "used", "", "rule", False, "ref_resource_use"
         if sig["use_acq"]:
             return "", "use", "llm_pending", True, "ref_reuse_ambiguous"
-        return "mentioned", "", "rule", False, "default_mention"
+        #return "mentioned", "", "rule", False, "default_mention"
+        return "", "none", "llm_pending", True, "default_to_llm"
 
     if cls in DEPOSIT_CLASSES:
         if sig["use_acq"] and sig["gen_dep"]:
